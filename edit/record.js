@@ -327,28 +327,48 @@ function fileToUrl(p) {
   console.log(`分辨率: ${OUT_W}x${OUT_H} (scale=${SCALE}, dsf=${SCALE}, viewport=${VW}x${VH})`);
   console.log(`帧率: ${FPS}fps  编码: x264 crf=${SCALE >= 2 ? 16 : 20}\n`);
 
-  await recordOne({
-    name: 'hook',
-    fileUrl: fileToUrl('extras/hook.html'),
-    duration: 5,
-    actions: []
-  });
+  // ---- --only 参数：只录指定段，复用其他已有 raw ----
+  // 用法: node record.js --only hook
+  //       node record.js --only hook,awards,seg-04
+  //       node record.js --only seg-04,seg-07
+  // 不传则全部重录。名字匹配 'hook' / 'awards' / 'seg-XX'（XX 是 01~10 的两位数字）。
+  const onlyArg = process.argv.find(a => a.startsWith('--only'));
+  let only = null;
+  if (onlyArg) {
+    const raw = onlyArg.includes('=') ? onlyArg.split('=')[1] : process.argv[process.argv.indexOf(onlyArg) + 1];
+    if (raw) only = new Set(raw.split(',').map(s => s.trim()).filter(Boolean));
+  }
+  const should = (name) => !only || only.has(name);
+  if (only) console.log(`仅录制: ${[...only].join(', ')}\n`);
+
+  if (should('hook')) {
+    await recordOne({
+      name: 'hook',
+      fileUrl: fileToUrl('extras/hook.html'),
+      duration: 3,
+      actions: []
+    });
+  }
 
   for (const seg of SCRIPT.segments) {
+    const name = `seg-${String(seg.id).padStart(2, '0')}`;
+    if (!should(name)) continue;
     await recordOne({
-      name: `seg-${String(seg.id).padStart(2, '0')}`,
+      name,
       fileUrl: fileToUrl(seg.file),
       duration: seg.duration,
       actions: seg.actions
     });
   }
 
-  await recordOne({
-    name: 'awards',
-    fileUrl: fileToUrl('extras/awards.html'),
-    duration: 8,
-    actions: []
-  });
+  if (should('awards')) {
+    await recordOne({
+      name: 'awards',
+      fileUrl: fileToUrl('extras/awards.html'),
+      duration: 5,
+      actions: []
+    });
+  }
 
   console.log('\n✅ 录制完成。raw/*.mp4 已经是真 4K。下一步: node build.js');
 })().catch(e => {

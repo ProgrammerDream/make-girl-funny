@@ -6,53 +6,112 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:100vw;height:100vh;overflow:hidden;background:#0a0a12;color:#fff;font-family:'PingFang SC','Microsoft YaHei',sans-serif}
-  body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:60px;position:relative}
+  /* 上方 80px 留 hook 顶部空间，下方 320px 让出抖音底部 UI（作者名/原声/进度条） */
+  body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px;position:relative;padding:80px 40px 320px}
 
   .stars{position:absolute;inset:0;overflow:hidden;z-index:0}
   .stars span{position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;opacity:.6;animation:tw 3s ease-in-out infinite}
   @keyframes tw{0%,100%{opacity:.2}50%{opacity:1}}
 
-  .layer{position:relative;z-index:2;text-align:center}
-
-  .title{
-    font-size:96px;font-weight:900;letter-spacing:4px;
-    background:linear-gradient(135deg,#ff7eb3,#c77dff,#ffd700);
+  /* 第一帧大爆点：从 0 帧开始就最大、最亮、最炸 */
+  .boom{
+    position:relative;z-index:2;text-align:center;
+    font-size:140px;font-weight:900;letter-spacing:6px;line-height:1.05;
+    background:linear-gradient(135deg,#ff4d8d 0%,#ff7eb3 30%,#c77dff 60%,#ffd700 100%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
-    opacity:0;animation:fadeUp .8s ease .2s forwards
+    text-shadow:0 0 60px rgba(255,126,179,.4);
+    animation:boomIn .35s cubic-bezier(.2,1.5,.4,1) both,wobble 2s ease-in-out .35s infinite
   }
-  .prompt{
-    margin-top:36px;font-size:54px;color:#ffd6e8;font-weight:700;
-    padding:28px 50px;border:2px dashed rgba(255,180,210,.6);border-radius:32px;
-    opacity:0;animation:fadeUp .8s ease 1.2s forwards;max-width:900px;line-height:1.4
+  .boom .red{
+    display:block;font-size:108px;color:#ff2e6c;-webkit-text-fill-color:#ff2e6c;
+    margin-top:14px;letter-spacing:4px
+  }
+  @keyframes boomIn{
+    0%{opacity:0;transform:scale(.4) rotate(-6deg)}
+    60%{opacity:1;transform:scale(1.1) rotate(2deg)}
+    100%{opacity:1;transform:scale(1) rotate(0)}
+  }
+  @keyframes wobble{
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.04)}
   }
 
-  .groups{display:flex;gap:80px;margin-top:60px;opacity:0;animation:fadeUp .8s ease 2.2s forwards}
+  /* prompt：紧跟着 0.4s 就出 */
+  .prompt{
+    position:relative;z-index:2;
+    margin-top:20px;font-size:62px;color:#fff;font-weight:800;line-height:1.4;
+    padding:32px 56px;border-radius:32px;
+    background:linear-gradient(135deg,rgba(255,77,141,.95),rgba(199,125,255,.95));
+    box-shadow:0 12px 40px rgba(255,77,141,.5);
+    opacity:0;animation:slideIn .4s ease .4s forwards;
+    max-width:920px
+  }
+  .prompt::before{content:'💬 ';font-size:0.85em}
+  @keyframes slideIn{
+    from{opacity:0;transform:translateY(30px) scale(.9)}
+    to{opacity:1;transform:translateY(0) scale(1)}
+  }
+
+  /* groups：1s 出，但每个独立从两侧飞入 */
+  .groups{display:flex;gap:48px;margin-top:24px;position:relative;z-index:2}
   .group{
     padding:32px 64px;border-radius:36px;
-    background:rgba(255,255,255,.08);backdrop-filter:blur(14px);
-    border:2px solid rgba(255,255,255,.2);
-    font-size:64px;font-weight:900;letter-spacing:3px
+    background:rgba(255,255,255,.1);backdrop-filter:blur(14px);
+    border:3px solid rgba(255,255,255,.3);
+    font-size:72px;font-weight:900;letter-spacing:3px;
+    box-shadow:0 8px 30px rgba(0,0,0,.4)
   }
-  .group.cn{color:#ff8fab}
-  .group.us{color:#7ec8ff}
-  .group small{display:block;font-size:32px;font-weight:500;opacity:.7;margin-top:8px;letter-spacing:6px}
+  .group.cn{color:#ff8fab;opacity:0;animation:flyL .5s ease 1s forwards}
+  .group.us{color:#7ec8ff;opacity:0;animation:flyR .5s ease 1s forwards}
+  .group small{display:block;font-size:34px;font-weight:600;opacity:.85;margin-top:6px;letter-spacing:6px}
+  @keyframes flyL{from{opacity:0;transform:translateX(-200px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes flyR{from{opacity:0;transform:translateX(200px)}to{opacity:1;transform:translateX(0)}}
 
-  @keyframes fadeUp{
-    from{opacity:0;transform:translateY(40px)}
-    to{opacity:1;transform:translateY(0)}
+  /* VS 标记：1.5s 弹出 */
+  .vs{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-size:80px;font-weight:900;color:#ffd700;
+    text-shadow:0 0 30px #ffd700,0 0 60px #ff4d8d;
+    z-index:3;opacity:0;animation:vsPop .4s cubic-bezier(.2,1.8,.4,1) 1.5s forwards
   }
+  @keyframes vsPop{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-30deg)}
+    100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+  }
+
+  /* 底部 hashtag：作为 flex 流里的最后一个元素，自然跟在 groups 下方，
+     gap:36 + body padding-bottom:320 已经把它推到抖音底部 UI 之上 */
+  .tag{
+    position:relative;z-index:2;
+    font-size:48px;font-weight:800;color:#ffd700;
+    padding:18px 40px;border-radius:60px;
+    background:rgba(0,0,0,.5);border:2px solid rgba(255,215,0,.6);
+    opacity:0;animation:fadeUp .4s ease 2s forwards;
+    white-space:nowrap;margin-top:8px
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
 <div class="stars" id="stars"></div>
-<div class="layer">
-  <h1 class="title">10 个大模型 PK</h1>
-  <div class="prompt">「来个逗女孩玩的 html<br>越好玩越好」</div>
+
+<div class="boom">
+  10 个 AI<br>
+  <span class="red">谁最会逗女孩</span>
+</div>
+
+<div class="prompt">同一个 prompt：<br>「来个逗女孩玩的 html，越好玩越好」</div>
+
+<div style="position:relative;width:100%;display:flex;justify-content:center">
   <div class="groups">
     <div class="group cn">国内<small>6 个</small></div>
     <div class="group us">国外<small>4 个</small></div>
   </div>
+  <div class="vs">VS</div>
 </div>
+
+<div class="tag">⚠️ 看到第 7 个我笑出声</div>
+
 <script>
   const s=document.getElementById('stars');
   for(let i=0;i<120;i++){

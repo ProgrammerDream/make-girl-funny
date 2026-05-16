@@ -51,10 +51,13 @@ function writeText(name, text) {
 
 // ---------- 1. 处理每段 webm ----------
 const VW = 1080 * SCALE, VH = 1920 * SCALE;
-const FS_NAME = 52 * SCALE, FS_ORI = 32 * SCALE, FS_CAP = 68 * SCALE;
+const FS_NAME = 52 * SCALE, FS_ORI = 32 * SCALE, FS_CAP = 64 * SCALE;
 const BOX_X = 40 * SCALE, BOX_Y = 40 * SCALE, BOX_W = 540 * SCALE, BOX_H = 130 * SCALE;
 const NAME_X = 70 * SCALE, NAME_Y = 58 * SCALE, ORI_X = 70 * SCALE, ORI_Y = 120 * SCALE;
-const CAP_BAR_H = 220 * SCALE, CAP_Y = 160 * SCALE;
+// 字幕条放在顶部钢印下方（钢印 y=40~170），不再挡住底部按钮/烟花/菜单
+const CAP_BAR_Y = 200 * SCALE;          // 字幕条顶边
+const CAP_BAR_H = 180 * SCALE;          // 字幕条高度
+const CAP_TEXT_Y = CAP_BAR_Y + 56 * SCALE;  // 文字绘制 y（在条内居中）
 const segMp4s = [];
 
 // 输出码率控制：1080p 用 crf=20 够清晰；4K 像素是 1080p 的 4 倍，需要更低 CRF 才能保留细节
@@ -82,8 +85,8 @@ CAPS.segments.forEach((seg, i) => {
     `drawbox=x=${BOX_X}:y=${BOX_Y}:w=${BOX_W}:h=${BOX_H}:color=black@0.55:t=fill`,
     `drawtext=fontfile='${FONT_FF}':textfile='${tName}':fontcolor=white:fontsize=${FS_NAME}:x=${NAME_X}:y=${NAME_Y}`,
     `drawtext=fontfile='${FONT_FF}':textfile='${tOri}':fontcolor=0xff8fab:fontsize=${FS_ORI}:x=${ORI_X}:y=${ORI_Y}`,
-    `drawbox=x=0:y=${VH - CAP_BAR_H}:w=${VW}:h=${CAP_BAR_H}:color=black@0.55:t=fill`,
-    `drawtext=fontfile='${FONT_FF}':textfile='${tCap}':fontcolor=white:fontsize=${FS_CAP}:x=(w-text_w)/2:y=${VH - CAP_Y}`
+    `drawbox=x=0:y=${CAP_BAR_Y}:w=${VW}:h=${CAP_BAR_H}:color=black@0.6:t=fill`,
+    `drawtext=fontfile='${FONT_FF}':textfile='${tCap}':fontcolor=white:fontsize=${FS_CAP}:x=(w-text_w)/2:y=${CAP_TEXT_Y}`
   ].join(',');
 
   sh(`ffmpeg -y -i "${inFile}" -vf "${filter}" -an -c:v libx264 -pix_fmt yuv420p -r 30 -preset medium -crf ${CRF} "${outFile}"`);

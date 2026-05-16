@@ -1,4 +1,4 @@
-# girl-fun 视频自动剪辑
+# make-girl-funny 视频自动剪辑
 
 把 `cn/` + `us/` 下的 10 个 html 自动录屏 + 拼成一支竖屏成片，无声，后期自配音乐和人声。
 
@@ -9,7 +9,7 @@
 ## 一次性安装
 
 ```powershell
-cd C:\record\develop\important\hermes-agent\girl-fun\edit
+cd C:\record\develop\important\hermes-agent\make-girl-funny\edit
 npm install
 npx playwright install chromium
 ```
