@@ -6,8 +6,18 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:100vw;height:100vh;overflow:hidden;background:#0a0a12;color:#fff;font-family:'PingFang SC','Microsoft YaHei',sans-serif}
-  /* 上方 80px 留 hook 顶部空间，下方 320px 让出抖音底部 UI（作者名/原声/进度条） */
-  body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px;position:relative;padding:80px 40px 320px}
+  body{display:flex;align-items:center;justify-content:center}
+
+  /* 1080x1920 固定舞台：录屏时 viewport 就是 1080x1920，scale=1；
+     浏览器横屏 / 任何尺寸预览时，JS 计算 --s 让它等比缩放到 fit。
+     padding 上下留 hook/抖音 UI 安全区，内容垂直居中 */
+  .stage{
+    position:relative;
+    width:1080px;height:1920px;flex-shrink:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px;
+    padding:80px 40px 320px;
+    transform:scale(var(--s,1));transform-origin:center center
+  }
 
   .stars{position:absolute;inset:0;overflow:hidden;z-index:0}
   .stars span{position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;opacity:.6;animation:tw 3s ease-in-out infinite}
@@ -93,26 +103,35 @@
 </style>
 </head>
 <body>
-<div class="stars" id="stars"></div>
+<div class="stage">
+  <div class="stars" id="stars"></div>
 
-<div class="boom">
-  10 个 AI<br>
-  <span class="red">谁最会逗女孩</span>
-</div>
-
-<div class="prompt">同一个 prompt：<br>「来个逗女孩玩的 html，越好玩越好」</div>
-
-<div style="position:relative;width:100%;display:flex;justify-content:center">
-  <div class="groups">
-    <div class="group cn">国内<small>6 个</small></div>
-    <div class="group us">国外<small>4 个</small></div>
+  <div class="boom">
+    10 个 AI<br>
+    <span class="red">谁最会逗女孩</span>
   </div>
-  <div class="vs">VS</div>
-</div>
 
-<div class="tag">⚠️ 看到第 7 个我笑出声</div>
+  <div class="prompt">同一个 prompt：<br>「来个逗女孩玩的 html，越好玩越好」</div>
+
+  <div style="position:relative;width:100%;display:flex;justify-content:center">
+    <div class="groups">
+      <div class="group cn">国内<small>6 个</small></div>
+      <div class="group us">国外<small>4 个</small></div>
+    </div>
+    <div class="vs">VS</div>
+  </div>
+
+  <div class="tag">⚠️ 看到第 7 个我笑出声</div>
+</div>
 
 <script>
+  // 等比缩放 stage 到当前窗口（录屏时 1080x1920 → s=1，无影响）
+  function fit(){
+    const s = Math.min(window.innerWidth/1080, window.innerHeight/1920);
+    document.documentElement.style.setProperty('--s', s);
+  }
+  fit(); window.addEventListener('resize', fit);
+
   const s=document.getElementById('stars');
   for(let i=0;i<120;i++){
     const e=document.createElement('span');
