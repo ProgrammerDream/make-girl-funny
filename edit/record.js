@@ -280,26 +280,24 @@ async function recordOne({ name, fileUrl, duration, actions }) {
     everyNthFrame: 1
   });
 
-  // ---- 等 actions 跑完才停，duration 只作保底最短时长 ----
-  // 之前一到 duration 就关浏览器，会切断 actions（看到 "Target page closed" 错误就是这个），
-  // 导致后半段 click 被吞、最后的视觉反馈录不到。
-  // 现在：actions 必须跑完，但至少录满 duration 秒。
-  const minDurationMs = duration * 1000;
-  const startMs = Date.now();
+  // ---- 严格按 duration 硬截断 ----
+  // duration 是 max cap：到点就停录，不管 actions 跑完没。
+  // 这样片长完全按 script.json 走，不会被 smoothMove/wait 累积时长拖长。
+  const maxDurationMs = duration * 1000;
+  let stopRequested = false;
   let actionsErr = null;
+
+  // actions 在后台跑，但全程检查 stopRequested 不会卡死收尾
   const actionsPromise = (actions && actions.length)
     ? runActions(page, actions).catch(e => { actionsErr = e; })
     : Promise.resolve();
-  // 给 actions 一个硬上限，防止异常情况无限等（duration 的 2.5 倍）
-  const hardCapMs = minDurationMs * 2.5;
+
+  // 到点就停，无论 actions 是否完成
   await Promise.race([
     actionsPromise,
-    new Promise(r => setTimeout(r, hardCapMs))
+    new Promise(r => setTimeout(r, maxDurationMs))
   ]);
-  const elapsed = Date.now() - startMs;
-  if (elapsed < minDurationMs) {
-    await new Promise(r => setTimeout(r, minDurationMs - elapsed));
-  }
+  stopRequested = true;
   if (actionsErr) console.warn(' actions error:', actionsErr.message);
 
   // ---- 收尾 ----
