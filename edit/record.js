@@ -283,21 +283,22 @@ async function recordOne({ name, fileUrl, duration, actions }) {
   // ---- 严格按 duration 硬截断 ----
   // duration 是 max cap：到点就停录，不管 actions 跑完没。
   // 这样片长完全按 script.json 走，不会被 smoothMove/wait 累积时长拖长。
+  // 特例：actions 为空（hook/awards 这种纯 CSS 动画页），不能 race —— 否则 actionsPromise
+  //      立刻 resolve 会让 race 秒退、screencast 一帧没推就停。这种情况老实等满 duration。
   const maxDurationMs = duration * 1000;
-  let stopRequested = false;
   let actionsErr = null;
 
-  // actions 在后台跑，但全程检查 stopRequested 不会卡死收尾
-  const actionsPromise = (actions && actions.length)
-    ? runActions(page, actions).catch(e => { actionsErr = e; })
-    : Promise.resolve();
-
-  // 到点就停，无论 actions 是否完成
-  await Promise.race([
-    actionsPromise,
-    new Promise(r => setTimeout(r, maxDurationMs))
-  ]);
-  stopRequested = true;
+  if (!actions || !actions.length) {
+    // 静态页：等满 duration
+    await new Promise(r => setTimeout(r, maxDurationMs));
+  } else {
+    const actionsPromise = runActions(page, actions).catch(e => { actionsErr = e; });
+    // 到点就停，无论 actions 是否完成
+    await Promise.race([
+      actionsPromise,
+      new Promise(r => setTimeout(r, maxDurationMs))
+    ]);
+  }
   if (actionsErr) console.warn(' actions error:', actionsErr.message);
 
   // ---- 收尾 ----
