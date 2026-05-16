@@ -37,32 +37,32 @@
     margin-top:14px;letter-spacing:4px
   }
   @keyframes boomIn{
-    0%{opacity:0;transform:scale(.4) rotate(-6deg)}
-    60%{opacity:1;transform:scale(1.1) rotate(2deg)}
-    100%{opacity:1;transform:scale(1) rotate(0)}
+    0%{transform:scale(.85) rotate(-3deg)}
+    60%{transform:scale(1.08) rotate(1.5deg)}
+    100%{transform:scale(1) rotate(0)}
   }
   @keyframes wobble{
     0%,100%{transform:scale(1)}
     50%{transform:scale(1.04)}
   }
 
-  /* prompt：紧跟着 0.4s 就出 */
+  /* prompt：第 0 帧就在，只做"弹一下"强调 */
   .prompt{
     position:relative;z-index:2;
     margin-top:20px;font-size:62px;color:#fff;font-weight:800;line-height:1.4;
     padding:32px 56px;border-radius:32px;
     background:linear-gradient(135deg,rgba(255,77,141,.95),rgba(199,125,255,.95));
     box-shadow:0 12px 40px rgba(255,77,141,.5);
-    opacity:0;animation:slideIn .4s ease .4s forwards;
+    animation:slideIn .4s ease .4s both;
     max-width:920px
   }
   .prompt::before{content:'💬 ';font-size:0.85em}
   @keyframes slideIn{
-    from{opacity:0;transform:translateY(30px) scale(.9)}
-    to{opacity:1;transform:translateY(0) scale(1)}
+    0%{transform:translateY(20px) scale(.95)}
+    100%{transform:translateY(0) scale(1)}
   }
 
-  /* groups：1s 出，但每个独立从两侧飞入 */
+  /* groups：第 0 帧就在，左右 group 各做飞入强调 */
   .groups{display:flex;gap:48px;margin-top:24px;position:relative;z-index:2}
   .group{
     padding:32px 64px;border-radius:36px;
@@ -71,35 +71,34 @@
     font-size:72px;font-weight:900;letter-spacing:3px;
     box-shadow:0 8px 30px rgba(0,0,0,.4)
   }
-  .group.cn{color:#ff8fab;opacity:0;animation:flyL .5s ease 1s forwards}
-  .group.us{color:#7ec8ff;opacity:0;animation:flyR .5s ease 1s forwards}
+  .group.cn{color:#ff8fab;animation:flyL .5s ease 1s both}
+  .group.us{color:#7ec8ff;animation:flyR .5s ease 1s both}
   .group small{display:block;font-size:34px;font-weight:600;opacity:.85;margin-top:6px;letter-spacing:6px}
-  @keyframes flyL{from{opacity:0;transform:translateX(-200px)}to{opacity:1;transform:translateX(0)}}
-  @keyframes flyR{from{opacity:0;transform:translateX(200px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes flyL{0%{transform:translateX(-120px)}100%{transform:translateX(0)}}
+  @keyframes flyR{0%{transform:translateX(120px)}100%{transform:translateX(0)}}
 
-  /* VS 标记：1.5s 弹出 */
+  /* VS 标记：第 0 帧就在，只做弹出强调 */
   .vs{
     position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
     font-size:80px;font-weight:900;color:#ffd700;
     text-shadow:0 0 30px #ffd700,0 0 60px #ff4d8d;
-    z-index:3;opacity:0;animation:vsPop .4s cubic-bezier(.2,1.8,.4,1) 1.5s forwards
+    z-index:3;animation:vsPop .4s cubic-bezier(.2,1.8,.4,1) 1.5s both
   }
   @keyframes vsPop{
-    0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-30deg)}
-    100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+    0%{transform:translate(-50%,-50%) scale(.6) rotate(-15deg)}
+    100%{transform:translate(-50%,-50%) scale(1) rotate(0)}
   }
 
-  /* 底部 hashtag：作为 flex 流里的最后一个元素，自然跟在 groups 下方，
-     gap:36 + body padding-bottom:320 已经把它推到抖音底部 UI 之上 */
+  /* hashtag：第 0 帧就在，只做轻微上浮 */
   .tag{
     position:relative;z-index:2;
     font-size:48px;font-weight:800;color:#ffd700;
     padding:18px 40px;border-radius:60px;
     background:rgba(0,0,0,.5);border:2px solid rgba(255,215,0,.6);
-    opacity:0;animation:fadeUp .4s ease 2s forwards;
+    animation:fadeUp .4s ease 2s both;
     white-space:nowrap;margin-top:8px
   }
-  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeUp{0%{transform:translateY(10px)}100%{transform:translateY(0)}}
 </style>
 </head>
 <body>
