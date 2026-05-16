@@ -51,13 +51,14 @@ function writeText(name, text) {
 
 // ---------- 1. 处理每段 webm ----------
 const VW = 1080 * SCALE, VH = 1920 * SCALE;
-const FS_NAME = 52 * SCALE, FS_ORI = 32 * SCALE, FS_CAP = 64 * SCALE;
-const BOX_X = 40 * SCALE, BOX_Y = 40 * SCALE, BOX_W = 540 * SCALE, BOX_H = 130 * SCALE;
-const NAME_X = 70 * SCALE, NAME_Y = 58 * SCALE, ORI_X = 70 * SCALE, ORI_Y = 120 * SCALE;
-// 字幕条放在顶部钢印下方（钢印 y=40~170），不再挡住底部按钮/烟花/菜单
-const CAP_BAR_Y = 200 * SCALE;          // 字幕条顶边
-const CAP_BAR_H = 180 * SCALE;          // 字幕条高度
-const CAP_TEXT_Y = CAP_BAR_Y + 56 * SCALE;  // 文字绘制 y（在条内居中）
+// 信息带放在 70~80% 位置：拇指停留视觉焦点区，且避开各 html 页面顶部 logo/标题。
+// y=1340~1570，下方仍留 50px 给抖音底部 UI（作者名/原声/进度条从 y≈1620 起）。
+const TOP_BAR_Y = 1340 * SCALE;
+const TOP_BAR_H = 230 * SCALE;
+const FS_TITLE  = 44 * SCALE;
+const FS_CAP    = 60 * SCALE;
+const TITLE_Y   = TOP_BAR_Y + 28 * SCALE;
+const CAP_Y     = TOP_BAR_Y + 110 * SCALE;
 const segMp4s = [];
 
 // 输出码率控制：1080p 用 crf=20 够清晰；4K 像素是 1080p 的 4 倍，需要更低 CRF 才能保留细节
@@ -76,17 +77,17 @@ CAPS.segments.forEach((seg, i) => {
     return;
   }
 
-  const tName = writeText(`seg-${padded}-name.txt`,    seg.model);
-  const tOri  = writeText(`seg-${padded}-origin.txt`,  `${seg.origin} · #${idx}`);
-  const tCap  = writeText(`seg-${padded}-cap.txt`,     seg.caption);
+  const tTitle = writeText(`seg-${padded}-title.txt`, `${seg.model}  ·  ${seg.origin}  ·  #${idx}`);
+  const tCap   = writeText(`seg-${padded}-cap.txt`,   seg.caption);
 
   const filter = [
     `scale=${VW}:${VH}:flags=lanczos:force_original_aspect_ratio=increase,crop=${VW}:${VH}`,
-    `drawbox=x=${BOX_X}:y=${BOX_Y}:w=${BOX_W}:h=${BOX_H}:color=black@0.55:t=fill`,
-    `drawtext=fontfile='${FONT_FF}':textfile='${tName}':fontcolor=white:fontsize=${FS_NAME}:x=${NAME_X}:y=${NAME_Y}`,
-    `drawtext=fontfile='${FONT_FF}':textfile='${tOri}':fontcolor=0xff8fab:fontsize=${FS_ORI}:x=${ORI_X}:y=${ORI_Y}`,
-    `drawbox=x=0:y=${CAP_BAR_Y}:w=${VW}:h=${CAP_BAR_H}:color=black@0.6:t=fill`,
-    `drawtext=fontfile='${FONT_FF}':textfile='${tCap}':fontcolor=white:fontsize=${FS_CAP}:x=(w-text_w)/2:y=${CAP_TEXT_Y}`
+    // 顶部信息带：横贯黑条
+    `drawbox=x=0:y=${TOP_BAR_Y}:w=${VW}:h=${TOP_BAR_H}:color=black@0.42:t=fill`,
+    // 上半行：模型名 · 国内 · #N（粉色，居中）
+    `drawtext=fontfile='${FONT_FF}':textfile='${tTitle}':fontcolor=0xff8fab:fontsize=${FS_TITLE}:x=(w-text_w)/2:y=${TITLE_Y}`,
+    // 下半行：吐槽（白色，居中）
+    `drawtext=fontfile='${FONT_FF}':textfile='${tCap}':fontcolor=white:fontsize=${FS_CAP}:x=(w-text_w)/2:y=${CAP_Y}`
   ].join(',');
 
   sh(`ffmpeg -y -i "${inFile}" -vf "${filter}" -an -c:v libx264 -pix_fmt yuv420p -r 30 -preset medium -crf ${CRF} "${outFile}"`);

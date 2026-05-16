@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "record": "node record.js"
+    "record": "node record.js",
+    "build": "node build.js"
   },
   "dependencies": {
     "playwright": "^1.48.0"
