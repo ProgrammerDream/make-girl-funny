@@ -1,0 +1,31 @@
+{
+  "_comment": "改这里就能改吐槽文案。每段的 caption 是底部一行字，subtitle 是模型名右边的小字。改完重新跑 build.sh 即可。",
+  "hook": {
+    "title": "同一句话，喂给 10 个大模型",
+    "prompt": "「来个逗女孩玩的 html，越好玩越好」",
+    "lineLeft": "国内 · 6",
+    "lineRight": "国外 · 4"
+  },
+  "segments": [
+    { "model": "Gemini 3.1 Pro",     "origin": "国外", "caption": "美式极简，就一句话" },
+    { "model": "豆包",                 "origin": "国内", "caption": "油腻直球预警" },
+    { "model": "Qwen 3.5",            "origin": "国内", "caption": "披着游戏皮的舔狗" },
+    { "model": "Grok Fast",           "origin": "国外", "caption": "美式直球，疯狂上头" },
+    { "model": "GPT-5.5 Thinking",    "origin": "国外", "caption": "硅谷质感，最克制" },
+    { "model": "DeepSeek V4 Pro",     "origin": "国内", "caption": "玩起来最贱，戏精本精" },
+    { "model": "MiniMax M2.7",        "origin": "国内", "caption": "国产卷王,梭哈所有玩法" },
+    { "model": "Claude Opus 4.7",     "origin": "国外", "caption": "信息爆炸,老婆使用手册" },
+    { "model": "Kimi 2.6 Thinking",   "origin": "国内", "caption": "这哪是 H5，是个产品" },
+    { "model": "GLM 5.1",             "origin": "国内", "caption": "氛围感天花板,烟花封神" }
+  ],
+  "awards": {
+    "title": "我的私心榜",
+    "items": [
+      { "icon": "🏆", "label": "最走心",     "model": "Kimi 2.6" },
+      { "icon": "🎨", "label": "最氛围感",   "model": "GLM 5.1" },
+      { "icon": "💀", "label": "最油",       "model": "豆包" },
+      { "icon": "🥇", "label": "综合最强",   "model": "Claude 4.7" }
+    ],
+    "outro": "你最想试哪个？评论区告诉我"
+  }
+}

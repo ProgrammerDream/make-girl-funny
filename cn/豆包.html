@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超可爱的小惊喜✨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        /* 粉色渐变治愈背景 */
+        body {
+            min-height: 100vh;
+            background: linear-gradient(45deg, #ffc0cb, #ffb6c1, #f8c8dc, #e6a8d7);
+            font-family: "微软雅黑", sans-serif;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        /* 可爱标题 */
+        .title {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            color: #fff;
+            text-shadow: 0 0 10px #ff69b4;
+            text-align: center;
+            z-index: 10;
+            animation: bounce 2s infinite alternate;
+        }
+        /* 标题弹跳动画 */
+        @keyframes bounce {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-50%, -50%) scale(1.05); }
+        }
+        /* 爱心基础样式 */
+        .heart {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ff69b4;
+            transform: rotate(45deg);
+            animation: float 1s linear forwards;
+            z-index: 5;
+        }
+        .heart::before, .heart::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ff69b4;
+            border-radius: 50%;
+        }
+        .heart::before { top: -10px; left: 0; }
+        .heart::after { top: 0; left: -10px; }
+        /* 爱心漂浮消失动画 */
+        @keyframes float {
+            0% { opacity: 1; transform: rotate(45deg) scale(1); }
+            100% { opacity: 0; transform: rotate(45deg) scale(0) translateY(-50px); }
+        }
+        /* 弹窗样式 */
+        .popup {
+            position: fixed;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 30px;
+            background: #fff;
+            color: #ff69b4;
+            font-size: 20px;
+            border-radius: 30px;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+            opacity: 0;
+            animation: popup 1.5s ease forwards;
+            z-index: 20;
+            white-space: nowrap;
+        }
+        @keyframes popup {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+    </style>
+</head>
+<body>
+<div class="title">爱心发射～BiuBiuBiu💖</div>
+
+<script>
+    // 甜甜的俏皮话库
+    const sweetWords = [
+        "你是全世界最可爱的小朋友✨",
+        "摸摸头～不许不开心哦",
+        "爱心全给你！收下我的喜欢💕",
+        "你一笑，世界都变甜啦",
+        "今天也是超喜欢你的一天～",
+        "小宝贝，今天也要开心呀🥰",
+        "你是我的专属小甜心～"
+    ];
+
+    // 鼠标移动生成爱心
+    document.addEventListener('mousemove', (e) => {
+        createHeart(e.clientX, e.clientY);
+    });
+
+    // 点击屏幕下爱心雨 + 弹俏皮话
+    document.addEventListener('click', () => {
+        // 随机弹甜话
+        showPopup();
+        // 爱心雨效果
+        for(let i=0; i<15; i++) {
+            setTimeout(() => {
+                createHeart(
+                    Math.random() * window.innerWidth,
+                    Math.random() * window.innerHeight
+                );
+            }, i * 50);
+        }
+    });
+
+    // 创建爱心函数
+    function createHeart(x, y) {
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+        // 随机大小和颜色深浅
+        const size = Math.random() * 15 + 10;
+        const color = Math.random() > 0.5 ? '#ff69b4' : '#ff1493';
+        heart.style.width = `${size}px`;
+        heart.style.height = `${size}px`;
+        heart.style.background = color;
+        heart.style.left = `${x - size/2}px`;
+        heart.style.top = `${y - size/2}px`;
+        document.body.appendChild(heart);
+        // 1秒后删除爱心
+        setTimeout(() => heart.remove(), 1000);
+    }
+
+    // 弹出甜话函数
+    function showPopup() {
+        const popup = document.createElement('div');
+        popup.classList.add('popup');
+        popup.innerText = sweetWords[Math.floor(Math.random() * sweetWords.length)];
+        document.body.appendChild(popup);
+        // 1.5秒后删除弹窗
+        setTimeout(() => popup.remove(), 1500);
+    }
+</script>
+</body>
+</html>

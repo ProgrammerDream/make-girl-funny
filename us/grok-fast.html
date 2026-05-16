@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>❤️ 专属逗女孩神器 ❤️</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Noto+Sans+SC:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fad0c4, #a1c4fd);
+            font-family: 'Noto Sans SC', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            color: #fff;
+            text-align: center;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Comic Neue', cursive;
+            font-size: 3.5em;
+            text-shadow: 0 0 20px rgba(255,105,180,0.8);
+            margin: 20px 0;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 30px;
+            color: #ff1493;
+            pointer-events: none;
+            animation: floatUp 4s linear forwards;
+            z-index: 10;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        .game-area {
+            background: rgba(255,255,255,0.2);
+            border-radius: 30px;
+            padding: 30px;
+            margin: 20px auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        button {
+            background: #ff1493;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255,20,147,0.4);
+        }
+
+        button:hover {
+            transform: scale(1.15) rotate(5deg);
+            background: #ff69b4;
+        }
+
+        .message {
+            font-size: 1.8em;
+            min-height: 80px;
+            margin: 20px 0;
+            text-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .kiss {
+            font-size: 120px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .kiss:active {
+            transform: scale(2);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>❤️ 来玩呀 小可爱 ❤️</h1>
+    <p style="font-size:1.3em; margin-bottom:30px;">点我我就脸红～</p>
+
+    <!-- 心跳表白区 -->
+    <div class="game-area">
+        <h2>💓 心跳告白机 💓</h2>
+        <div id="loveMeter" style="font-size:4em; margin:20px 0;">❤️ 0%</div>
+        <button onclick="increaseLove()">快戳我心跳！</button>
+        <button onclick="randomConfession()">抽一句情话</button>
+    </div>
+
+    <!-- 亲亲游戏 -->
+    <div class="game-area">
+        <h2>😘 亲亲躲猫猫 😘</h2>
+        <div id="kissArea" class="kiss" onclick="giveKiss()">💋</div>
+        <p>快来亲我！（越快越好）</p>
+    </div>
+
+    <!-- 缘分测试 -->
+    <div class="game-area">
+        <h2>🔮 今天你会爱上我吗？</h2>
+        <button onclick="fortune()">测测缘分</button>
+        <div id="fortuneResult" style="margin-top:20px; font-size:1.5em;"></div>
+    </div>
+
+    <!-- 疯狂撒花按钮 -->
+    <div class="game-area">
+        <button onclick="crazyHearts()" style="padding:20px 50px; font-size:1.5em;">
+            🌸 疯狂撒花模式 🌸
+        </button>
+    </div>
+</div>
+
+<script>
+    let love = 0;
+
+    // 撒花函数
+    function createHeart() {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.textContent = ['❤️','💖','💗','💘','💝','💕','😘'][Math.floor(Math.random()*7)];
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.animationDuration = (Math.random() * 3 + 3) + 's';
+        document.body.appendChild(heart);
+
+        setTimeout(() => heart.remove(), 6000);
+    }
+
+    // 增加好感度
+    function increaseLove() {
+        love = Math.min(100, love + Math.floor(Math.random()*15) + 8);
+        const meter = document.getElementById('loveMeter');
+        meter.textContent = `❤️ ${love}%`;
+
+        if (love > 90) {
+            meter.style.color = '#ff1493';
+            meter.textContent = `❤️ ${love}% 已经爱上你啦～`;
+        }
+
+        for(let i = 0; i < 8; i++) {
+            setTimeout(createHeart, i*80);
+        }
+    }
+
+    // 随机情话
+    const confessions = [
+        "遇到你以后，我才知道原来心动是这种感觉～",
+        "你今天又偷偷住进我心里了，房租都不交！",
+        "如果喜欢你是错，那我宁愿一错再错。",
+        "我最近在练习一见钟情，然后就遇到了你。",
+        "你的笑容比阳光还甜，能不能每天都给我看？",
+        "我不是在撩你，我是在认真喜欢你呀。",
+        "做我女朋友好不好？不然我今晚睡不着了～",
+        "全世界我只宠你一个，行不行？"
+    ];
+
+    function randomConfession() {
+        const msg = confessions[Math.floor(Math.random() * confessions.length)];
+        const result = document.createElement('div');
+        result.style.fontSize = '1.6em';
+        result.style.margin = '20px';
+        result.style.padding = '20px';
+        result.style.background = 'rgba(255,255,255,0.3)';
+        result.style.borderRadius = '20px';
+        result.textContent = msg;
+        document.querySelector('.container').appendChild(result);
+
+        setTimeout(() => result.remove(), 8000);
+
+        for(let i = 0; i < 15; i++) createHeart();
+    }
+
+    // 亲亲
+    let kissCount = 0;
+    function giveKiss() {
+        kissCount++;
+        const kiss = document.getElementById('kissArea');
+        kiss.textContent = ['💋','😘','💖','🥰'][Math.floor(Math.random()*4)];
+
+        setTimeout(() => {
+            kiss.textContent = '💋';
+        }, 300);
+
+        if (kissCount % 5 === 0) {
+            alert('哇～你亲我' + kissCount + '次了！我要脸红到爆炸啦 ❤️');
+        }
+
+        createHeart();
+    }
+
+    // 缘分测试
+    function fortune() {
+        const results = [
+            "🔥 99%！今天必须表白，不然老天爷都看不下去了！",
+            "❤️ 今天超级有缘！她偷偷看你好多次了哦～",
+            "🌟 缘分爆表！她现在可能正在想你！",
+            "💕 85%！再加把劲就能抱得美人归啦",
+            "😏 她刚刚在心里说你好可爱…",
+            "💖 天呐！月老今天亲自给你牵红线！"
+        ];
+
+        const resultDiv = document.getElementById('fortuneResult');
+        resultDiv.style.opacity = 0;
+
+        setTimeout(() => {
+            resultDiv.textContent = results[Math.floor(Math.random() * results.length)];
+            resultDiv.style.transition = 'all 0.6s';
+            resultDiv.style.opacity = 1;
+        }, 200);
+
+        for(let i = 0; i < 20; i++) {
+            setTimeout(createHeart, i * 50);
+        }
+    }
+
+    // 疯狂撒花
+    function crazyHearts() {
+        for(let i = 0; i < 80; i++) {
+            setTimeout(createHeart, i * 30);
+        }
+
+        const msg = document.createElement('div');
+        msg.style.position = 'fixed';
+        msg.style.top = '40%';
+        msg.style.left = '50%';
+        msg.style.transform = 'translate(-50%, -50%)';
+        msg.style.fontSize = '3em';
+        msg.style.zIndex = '100';
+        msg.style.color = 'white';
+        msg.style.textShadow = '0 0 30px pink';
+        msg.textContent = '💖 喜欢你呀！ 💖';
+        document.body.appendChild(msg);
+
+        setTimeout(() => msg.remove(), 3000);
+    }
+
+    // 自动飘心
+    setInterval(() => {
+        if (Math.random() > 0.6) createHeart();
+    }, 800);
+
+    // 初始化
+    window.onload = () => {
+        for(let i = 0; i < 12; i++) {
+            setTimeout(createHeart, i * 100);
+        }
+
+        // 键盘彩蛋：按空格疯狂撒花
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                crazyHearts();
+            }
+        });
+    };
+</script>
+</body>
+</html>

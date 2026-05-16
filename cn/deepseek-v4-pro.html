@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 心动实验室 ~ 点我点我！</title>
+    <style>
+        :root {
+            --pink: #ff7eb3;
+            --pink-light: #ffb3d1;
+            --purple: #c77dff;
+            --bg-start: #fce4ec;
+            --bg-mid: #f8d6e7;
+            --bg-end: #e8d5f5;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --shadow: 0 20px 60px rgba(180, 100, 140, 0.25);
+            --text: #5c3d4a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', sans-serif;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8d6e7 30%, #f3d4f0 50%, #e8d5f5 70%, #fce4ec 100%);
+            background-size: 400% 400%;
+            animation: bgShift 20s ease-in-out infinite;
+            cursor: default;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        @keyframes bgShift {
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+            25% {
+                background-position: 100% 0%;
+            }
+            50% {
+                background-position: 100% 100%;
+            }
+            75% {
+                background-position: 0% 100%;
+            }
+        }
+
+        /* ========== 飘落粒子容器 ========== */
+        .falling-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .falling-item {
+            position: absolute;
+            top: -80px;
+            animation: fallDown linear infinite;
+            opacity: 0.8;
+            font-size: 24px;
+            pointer-events: none;
+            will-change: transform;
+        }
+
+        @keyframes fallDown {
+            0% {
+                transform: translateY(-80px) rotate(0deg) translateX(0px);
+                opacity: 0.9;
+            }
+            25% {
+                transform: translateY(25vh) rotate(90deg) translateX(40px);
+                opacity: 0.75;
+            }
+            50% {
+                transform: translateY(50vh) rotate(180deg) translateX(-30px);
+                opacity: 0.6;
+            }
+            75% {
+                transform: translateY(75vh) rotate(270deg) translateX(50px);
+                opacity: 0.4;
+            }
+            100% {
+                transform: translateY(105vh) rotate(360deg) translateX(-20px);
+                opacity: 0.1;
+            }
+        }
+
+        /* ========== 点击产生的爱心 ========== */
+        .click-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            font-size: 28px;
+            animation: heartFloat 1.5s ease-out forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes heartFloat {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3) translateY(0);
+                opacity: 1;
+            }
+            40% {
+                transform: translate(-50%, -50%) scale(1.4) translateY(-30px);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.2) translateY(-160px);
+                opacity: 0;
+            }
+        }
+
+        /* ========== 庆祝粒子 ========== */
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 998;
+            animation: confettiBurst 2.5s ease-out forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes confettiBurst {
+            0% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            30% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--dx), var(--dy)) scale(0) rotate(var(--rot));
+                opacity: 0;
+            }
+        }
+
+        /* ========== 主卡片 ========== */
+        .main-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 32px;
+            padding: 40px 36px 36px;
+            box-shadow: var(--shadow), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            text-align: center;
+            max-width: 460px;
+            width: 100%;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 28px 70px rgba(180, 100, 140, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+        }
+
+        /* 卡片顶部装饰 */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 6px;
+            background: linear-gradient(90deg, #ffb3d1, #ff7eb3, #c77dff, #ffb3d1);
+            border-radius: 0 0 20px 20px;
+            opacity: 0.7;
+        }
+
+        .emoji-display {
+            font-size: 90px;
+            display: block;
+            margin-bottom: 10px;
+            animation: emojiBounce 2s ease-in-out infinite;
+            transition: all 0.3s ease;
+            line-height: 1;
+        }
+
+        @keyframes emojiBounce {
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+            15% {
+                transform: translateY(-20px) scale(1.08);
+            }
+            30% {
+                transform: translateY(0) scale(0.96);
+            }
+            45% {
+                transform: translateY(-10px) scale(1.04);
+            }
+            60% {
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .emoji-display.shake {
+            animation: emojiShake 0.6s ease-in-out;
+        }
+
+        @keyframes emojiShake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            15% {
+                transform: translateX(-14px) rotate(-5deg);
+            }
+            30% {
+                transform: translateX(14px) rotate(5deg);
+            }
+            45% {
+                transform: translateX(-10px) rotate(-3deg);
+            }
+            60% {
+                transform: translateX(10px) rotate(3deg);
+            }
+            75% {
+                transform: translateX(-5px);
+            }
+            90% {
+                transform: translateX(3px);
+            }
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #d4607e;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .card-subtitle {
+            font-size: 0.95rem;
+            color: #9b7d8b;
+            margin-bottom: 24px;
+            line-height: 1.5;
+            min-height: 28px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            min-height: 56px;
+            align-items: center;
+        }
+
+        /* ========== 按钮样式 ========== */
+        .btn {
+            padding: 16px 36px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+            position: relative;
+            outline: none;
+            font-family: inherit;
+            white-space: nowrap;
+            z-index: 1;
+        }
+
+        .btn-yes {
+            background: linear-gradient(135deg, #ff7eb3 0%, #ff5c8a 100%);
+            color: #fff;
+            box-shadow: 0 8px 28px rgba(255, 94, 138, 0.45);
+            animation: pulseYes 2.2s ease-in-out infinite;
+            font-size: 1.3rem;
+            padding: 18px 44px;
+            z-index: 2;
+        }
+
+        .btn-yes:hover {
+            transform: scale(1.08);
+            box-shadow: 0 14px 36px rgba(255, 94, 138, 0.6);
+        }
+        .btn-yes:active {
+            transform: scale(0.94);
+            box-shadow: 0 4px 16px rgba(255, 94, 138, 0.5);
+            transition: all 0.1s ease;
+        }
+
+        @keyframes pulseYes {
+            0%,
+            100% {
+                box-shadow: 0 8px 28px rgba(255, 94, 138, 0.45);
+            }
+            50% {
+                box-shadow: 0 8px 40px rgba(255, 94, 138, 0.7), 0 0 60px rgba(255, 126, 179, 0.35);
+            }
+        }
+
+        .btn-no {
+            background: linear-gradient(135deg, #d5c4d0 0%, #b8a9b5 100%);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(150, 130, 140, 0.35);
+            position: relative;
+            transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+            z-index: 1;
+        }
+
+        .btn-no:hover {
+            box-shadow: 0 10px 28px rgba(150, 130, 140, 0.5);
+        }
+
+        .btn-no.fleeing {
+            transition: all 0.18s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+            z-index: 0;
+        }
+
+        /* ========== 提示气泡 ========== */
+        .hint-bubble {
+            position: fixed;
+            pointer-events: none;
+            z-index: 900;
+            background: rgba(255, 255, 255, 0.9);
+            color: #d4607e;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(180, 100, 140, 0.25);
+            animation: bubblePop 2s ease-out forwards;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes bubblePop {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+                opacity: 0;
+            }
+            20% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 1;
+            }
+            30% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            80% {
+                transform: translate(-50%, -50%) translateY(-30px) scale(1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translate(-50%, -50%) translateY(-70px) scale(0.6);
+                opacity: 0;
+            }
+        }
+
+        /* ========== 成就弹窗 ========== */
+        .achievement-toast {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 16px 28px;
+            border-radius: 40px;
+            box-shadow: 0 14px 40px rgba(180, 100, 140, 0.35);
+            font-weight: 700;
+            font-size: 1rem;
+            color: #d4607e;
+            letter-spacing: 1px;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            white-space: nowrap;
+            border: 2px solid rgba(255, 180, 200, 0.5);
+        }
+        .achievement-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 500px) {
+            .card {
+                padding: 28px 18px 24px;
+                border-radius: 24px;
+            }
+            .emoji-display {
+                font-size: 64px;
+            }
+            .card-title {
+                font-size: 1.3rem;
+            }
+            .card-subtitle {
+                font-size: 0.85rem;
+            }
+            .btn-yes {
+                font-size: 1.1rem;
+                padding: 14px 30px;
+            }
+            .btn-no {
+                font-size: 1rem;
+                padding: 13px 26px;
+            }
+            .btn-row {
+                gap: 14px;
+                min-height: 48px;
+            }
+        }
+        @media (max-width: 360px) {
+            .card {
+                padding: 22px 12px 20px;
+                border-radius: 20px;
+            }
+            .emoji-display {
+                font-size: 50px;
+            }
+            .card-title {
+                font-size: 1.1rem;
+            }
+            .btn-yes {
+                font-size: 1rem;
+                padding: 12px 22px;
+            }
+            .btn-no {
+                font-size: 0.9rem;
+                padding: 11px 20px;
+            }
+            .btn-row {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 飘落粒子 -->
+    <div class="falling-container" id="fallingContainer"></div>
+
+    <!-- 成就提示 -->
+    <div class="achievement-toast" id="achievementToast"></div>
+
+    <!-- 主卡片 -->
+    <div class="main-wrapper">
+        <div class="card" id="mainCard">
+            <span class="emoji-display" id="mainEmoji">🥺</span>
+            <h2 class="card-title" id="cardTitle">小姐姐~ 问你个事儿</h2>
+            <p class="card-subtitle" id="cardSubtitle">你愿意……和我一起<br>去吃超好吃的甜品吗？🍰</p>
+            <div class="btn-row" id="btnRow">
+                <button class="btn btn-yes" id="btnYes" title="当然愿意啦！">愿意呀 ❤️</button>
+                <button class="btn btn-no" id="btnNo" title="再想想嘛~">emmm... 🤔</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ============ DOM 元素 ============
+            const fallingContainer = document.getElementById('fallingContainer');
+            const achievementToast = document.getElementById('achievementToast');
+            const mainEmoji = document.getElementById('mainEmoji');
+            const cardTitle = document.getElementById('cardTitle');
+            const cardSubtitle = document.getElementById('cardSubtitle');
+            const btnRow = document.getElementById('btnRow');
+            const btnYes = document.getElementById('btnYes');
+            const btnNo = document.getElementById('btnNo');
+            const mainCard = document.getElementById('mainCard');
+
+            // ============ 状态变量 ============
+            let fleeCount = 0;
+            let isCelebrating = false;
+            let btnNoRect = null;
+            let lastFleeTime = 0;
+            const FLEE_COOLDOWN = 200; // 逃跑冷却时间(ms)
+            let idleTimer = null;
+            let idlePromptShown = false;
+            let totalClicksOnYes = 0;
+
+            // 按钮逃跑的文案变化
+            const noBtnTexts = [
+                'emmm... 🤔',
+                '不要嘛~ 😅',
+                '别点我呀~ 🙈',
+                '你抓不到我 😝',
+                '哼！跑快快~ 🏃‍♀️',
+                '啊啊别过来~ 😱',
+                '我躲！🫣',
+                '呜呜放过我~ 🥺',
+                '好吧你厉害... 😤',
+                '我投降啦~ 🏳️',
+            ];
+
+            // 副标题的变化
+            const subtitlePool = [
+                '你愿意……和我一起<br>去吃超好吃的甜品吗？🍰',
+                '真的不考虑一下嘛~ 🥺',
+                '我会给你买奶茶的！🧋',
+                '还有小蛋糕哦~ 🎂',
+                '别犹豫啦~ 快选吧！💕',
+                '你看那个"愿意"按钮多可爱~',
+                '选"愿意"会有惊喜哦~ ✨',
+                '拜托拜托~ 🙏💖',
+            ];
+
+            // ============ 初始化飘落粒子 ============
+            const fallingEmojis = ['🌸', '💖', '✨', '🩷', '💕', '🌷', '🦋', '💗', '🎀', '🍬', '🌟', '💝', '🧸', '🍰', '💐',
+                '🫧', '🌺', '💓'
+            ];
+
+            function createFallingItem() {
+                const item = document.createElement('span');
+                item.className = 'falling-item';
+                item.textContent = fallingEmojis[Math.floor(Math.random() * fallingEmojis.length)];
+                item.style.left = Math.random() * 96 + '%';
+                item.style.fontSize = (18 + Math.random() * 30) + 'px';
+                item.style.animationDuration = (8 + Math.random() * 16) + 's';
+                item.style.animationDelay = Math.random() * 12 + 's';
+                item.style.opacity = (0.35 + Math.random() * 0.55);
+                fallingContainer.appendChild(item);
+
+                // 动画结束后移除并重新创建（保持数量稳定）
+                const totalDuration = parseFloat(item.style.animationDuration) + parseFloat(item.style.animationDelay);
+                setTimeout(() => {
+                    if (item.parentNode) {
+                        item.remove();
+                        createFallingItem();
+                    }
+                }, totalDuration * 1000 + 500);
+            }
+
+            // 初始创建粒子
+            const PARTICLE_COUNT = 22;
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const item = document.createElement('span');
+                item.className = 'falling-item';
+                item.textContent = fallingEmojis[Math.floor(Math.random() * fallingEmojis.length)];
+                item.style.left = Math.random() * 96 + '%';
+                item.style.fontSize = (18 + Math.random() * 30) + 'px';
+                item.style.animationDuration = (8 + Math.random() * 16) + 's';
+                item.style.animationDelay = Math.random() * 14 + 's';
+                item.style.opacity = (0.35 + Math.random() * 0.55);
+                fallingContainer.appendChild(item);
+
+                const totalDuration = parseFloat(item.style.animationDuration) + parseFloat(item.style.animationDelay);
+                setTimeout(() => {
+                    if (item.parentNode) {
+                        item.remove();
+                        createFallingItem();
+                    }
+                }, totalDuration * 1000 + 500);
+            }
+
+            // ============ 点击页面产生爱心 ============
+            document.addEventListener('click', function(e) {
+                if (isCelebrating) return;
+                // 不拦截按钮点击，额外产生爱心
+                const heart = document.createElement('span');
+                heart.className = 'click-heart';
+                heart.textContent = ['💖', '💕', '💗', '💝', '🩷', '✨', '🌸', '💘'][Math.floor(Math.random() *
+                    8)];
+                heart.style.left = e.clientX + 'px';
+                heart.style.top = e.clientY + 'px';
+                heart.style.fontSize = (22 + Math.random() * 26) + 'px';
+                document.body.appendChild(heart);
+
+                setTimeout(() => {
+                    if (heart.parentNode) heart.remove();
+                }, 1600);
+            });
+
+            // ============ 按钮逃跑逻辑 ============
+            function getBtnNoCenter() {
+                const rect = btnNo.getBoundingClientRect();
+                return {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2,
+                    width: rect.width,
+                    height: rect.height,
+                    left: rect.left,
+                    top: rect.top,
+                    right: rect.right,
+                    bottom: rect.bottom,
+                };
+            }
+
+            function moveBtnNoAway(mouseX, mouseY) {
+                const now = Date.now();
+                if (now - lastFleeTime < FLEE_COOLDOWN) return;
+                if (isCelebrating) return;
+                lastFleeTime = now;
+
+                const btnCenter = getBtnNoCenter();
+                const viewW = window.innerWidth;
+                const viewH = window.innerHeight;
+                const btnW = btnCenter.width;
+                const btnH = btnCenter.height;
+
+                // 计算远离鼠标的方向
+                const dx = btnCenter.x - mouseX;
+                const dy = btnCenter.y - mouseY;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                const normX = dx / dist;
+                const normY = dy / dist;
+
+                // 逃跑距离
+                const fleeDist = 80 + Math.random() * 160;
+
+                // 计算新位置（按钮使用相对定位在btnRow内，但我们需要它跑到屏幕任意位置）
+                // 将按钮移到body层级进行绝对定位
+                if (btnNo.parentElement !== document.body) {
+                    const rect = btnNo.getBoundingClientRect();
+                    const origParent = btnNo.parentElement;
+                    btnNo.style.position = 'fixed';
+                    btnNo.style.left = rect.left + 'px';
+                    btnNo.style.top = rect.top + 'px';
+                    btnNo.style.margin = '0';
+                    btnNo.style.zIndex = '5';
+                    btnNo.classList.add('fleeing');
+                    document.body.appendChild(btnNo);
+                    btnNoRect = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+                }
+
+                const currentLeft = parseFloat(btnNo.style.left) || btnNoRect?.left || 0;
+                const currentTop = parseFloat(btnNo.style.top) || btnNoRect?.top || 0;
+                const currentW = btnNoRect?.width || btnW;
+                const currentH = btnNoRect?.height || btnH;
+
+                let newLeft = currentLeft + normX * fleeDist;
+                let newTop = currentTop + normY * fleeDist;
+
+                // 边界检查
+                const margin = 20;
+                newLeft = Math.max(margin, Math.min(viewW - currentW - margin, newLeft));
+                newTop = Math.max(margin, Math.min(viewH - currentH - margin, newTop));
+
+                // 如果新位置和旧位置太近，再移动
+                const moveDist = Math.sqrt((newLeft - currentLeft) ** 2 + (newTop - currentTop) ** 2);
+                if (moveDist < 50) {
+                    newLeft = currentLeft + (Math.random() - 0.5) * 250;
+                    newTop = currentTop + (Math.random() - 0.5) * 250;
+                    newLeft = Math.max(margin, Math.min(viewW - currentW - margin, newLeft));
+                    newTop = Math.max(margin, Math.min(viewH - currentH - margin, newTop));
+                }
+
+                btnNo.style.left = newLeft + 'px';
+                btnNo.style.top = newTop + 'px';
+                btnNoRect = { left: newLeft, top: newTop, width: currentW, height: currentH };
+
+                // 更新逃跑计数
+                fleeCount++;
+                updateFleeState();
+
+                // 如果逃跑次数够多，按钮可能"投降"
+                if (fleeCount >= 8 && !btnNo.dataset.surrendered) {
+                    btnNo.dataset.surrendered = 'true';
+                    btnNo.textContent = '好吧我投降~ 🏳️';
+                    btnNo.style.background = 'linear-gradient(135deg, #ffb3d1 0%, #ff7eb3 100%)';
+                    btnNo.style.boxShadow = '0 8px 28px rgba(255,126,179,0.5)';
+                    btnNo.style.fontSize = '1.1rem';
+                    btnNo.style.padding = '15px 30px';
+                    btnNo.style.zIndex = '8';
+                    showHintBubble('哎呀，我投降啦~ 点我吧！💖', btnNo);
+                }
+            }
+
+            function updateFleeState() {
+                const idx = Math.min(fleeCount, noBtnTexts.length - 1);
+                if (!btnNo.dataset.surrendered) {
+                    btnNo.textContent = noBtnTexts[idx];
+                }
+                // 更新副标题
+                const subIdx = Math.min(Math.floor(fleeCount / 2), subtitlePool.length - 1);
+                cardSubtitle.innerHTML = subtitlePool[subIdx];
+
+                // emoji变化
+                if (fleeCount >= 6 && !btnNo.dataset.surrendered) {
+                    mainEmoji.textContent = '😢';
+                } else if (fleeCount >= 3) {
+                    mainEmoji.textContent = '🥺';
+                }
+
+                // 显示成就
+                if (fleeCount === 5) {
+                    showAchievement('🏆 成就解锁：坚持不懈的追捕者！');
+                }
+                if (fleeCount === 10) {
+                    showAchievement('🌟 隐藏成就：让按钮无处可逃！');
+                }
+            }
+
+            // 桌面端：鼠标靠近按钮时逃跑
+            document.addEventListener('mousemove', function(e) {
+                if (isCelebrating) return;
+                if (btnNo.dataset.surrendered === 'true') return;
+
+                const btnCenter = getBtnNoCenter();
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+                const dx = mouseX - btnCenter.x;
+                const dy = mouseY - btnCenter.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // 危险区域半径（扩大检测范围）
+                const dangerRadius = Math.max(btnCenter.width, btnCenter.height) * 1.6 + 40;
+                if (dist < dangerRadius) {
+                    moveBtnNoAway(mouseX, mouseY);
+                }
+            });
+
+            // 移动端：触摸按钮时逃跑
+            btnNo.addEventListener('touchstart', function(e) {
+                if (isCelebrating) return;
+                if (btnNo.dataset.surrendered === 'true') {
+                    // 投降后点击触发庆祝
+                    triggerCelebration();
+                    return;
+                }
+                const touch = e.touches[0];
+                if (touch) {
+                    moveBtnNoAway(touch.clientX, touch.clientY);
+                }
+                // 即使点到了也给出有趣的反应
+                setTimeout(() => {
+                    if (fleeCount < 8) {
+                        showHintBubble('嘿嘿，点不到我吧~ 😝', btnNo);
+                    }
+                }, 100);
+            });
+
+            // 如果用户真的点击到了"不愿意"按钮（桌面端）
+            btnNo.addEventListener('click', function(e) {
+                if (isCelebrating) return;
+                if (btnNo.dataset.surrendered === 'true') {
+                    triggerCelebration();
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                // 极少数情况点到了
+                showHintBubble('呀！被点到了…但系统故障~请重试 😜', btnNo);
+                mainEmoji.classList.add('shake');
+                setTimeout(() => mainEmoji.classList.remove('shake'), 600);
+                // 再跑一次
+                const rect = btnNo.getBoundingClientRect();
+                moveBtnNoAway(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            });
+
+            // ============ "愿意"按钮 ============
+            btnYes.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (isCelebrating) return;
+                totalClicksOnYes++;
+                triggerCelebration();
+            });
+
+            // 双击"愿意"触发超级庆祝
+            btnYes.addEventListener('dblclick', function(e) {
+                if (isCelebrating) return;
+                totalClicksOnYes += 2;
+                triggerCelebration(true);
+            });
+
+            // ============ 庆祝效果 ============
+            function triggerCelebration(superMode = false) {
+                if (isCelebrating && !superMode) return;
+                isCelebrating = true;
+
+                // 更新UI
+                mainEmoji.textContent = '🥰';
+                mainEmoji.style.animation = 'none';
+                mainEmoji.offsetHeight;
+                mainEmoji.style.animation = 'emojiBounce 0.5s ease-in-out 3';
+                cardTitle.textContent = '耶！太开心啦~ 🎉';
+                cardSubtitle.innerHTML = '你真好！💖<br>今天一定要开开心心的哦~';
+                btnYes.textContent = '好耶！💝';
+                btnYes.style.animation = 'none';
+                btnYes.style.transform = 'scale(1.1)';
+                btnYes.style.boxShadow = '0 16px 44px rgba(255,94,138,0.7)';
+
+                // 隐藏不愿意按钮
+                if (btnNo.dataset.surrendered === 'true' || fleeCount >= 8) {
+                    btnNo.textContent = '我也愿意！💕';
+                    btnNo.style.background = 'linear-gradient(135deg, #ffb3d1 0%, #ff7eb3 100%)';
+                    btnNo.style.boxShadow = '0 8px 28px rgba(255,126,179,0.5)';
+                }
+                setTimeout(() => {
+                    btnNo.style.opacity = '0';
+                    btnNo.style.pointerEvents = 'none';
+                    btnNo.style.transition = 'all 0.5s ease';
+                }, 400);
+
+                // 发射庆祝粒子
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                const particleCount = superMode ? 150 : 80;
+                const celebrationEmojis = ['🎉', '🎊', '💖', '✨', '🌟', '💕', '🎀', '💝', '🥳', '🎂', '🍰', '🧁', '💐',
+                    '🌈', '🦄', '💗', '🎈', '🎁', '💎', '🔥'
+                ];
+                const colors = ['#ff7eb3', '#ff5c8a', '#c77dff', '#ffb3d1', '#ffd700', '#ff6b9d',
+                    '#a78bfa', '#f472b6', '#fb923c', '#fbbf24', '#34d399', '#60a5fa'
+                ];
+
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('span');
+                    particle.className = 'confetti';
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 180 + Math.random() * 500;
+                    const dx = Math.cos(angle) * distance;
+                    const dy = Math.sin(angle) * distance - (Math.random() * 200);
+                    const rot = (Math.random() - 0.5) * 1200;
+                    const size = 14 + Math.random() * 40;
+
+                    particle.style.cssText = `
+                        left: ${centerX}px;
+                        top: ${centerY}px;
+                        font-size: ${size}px;
+                        --dx: ${dx}px;
+                        --dy: ${dy}px;
+                        --rot: ${rot}deg;
+                        animation-duration: ${2 + Math.random() * 3.5}s;
+                    `;
+
+                    if (Math.random() < 0.55) {
+                        particle.textContent = celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)];
+                    } else {
+                        // 彩色小圆点
+                        particle.textContent = '●';
+                        particle.style.color = colors[Math.floor(Math.random() * colors.length)];
+                        particle.style.fontSize = (8 + Math.random() * 18) + 'px';
+                    }
+
+                    document.body.appendChild(particle);
+
+                    const duration = parseFloat(particle.style.animationDuration) * 1000;
+                    setTimeout(() => {
+                        if (particle.parentNode) particle.remove();
+                    }, duration + 300);
+                }
+
+                // 延迟发射第二轮
+                setTimeout(() => {
+                    const extraCount = superMode ? 60 : 25;
+                    for (let i = 0; i < extraCount; i++) {
+                        const particle = document.createElement('span');
+                        particle.className = 'confetti';
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = 100 + Math.random() * 350;
+                        const dx = Math.cos(angle) * distance;
+                        const dy = Math.sin(angle) * distance - (Math.random() * 150);
+                        const rot = (Math.random() - 0.5) * 1000;
+
+                        particle.style.cssText = `
+                            left: ${centerX + (Math.random()-0.5)*200}px;
+                            top: ${centerY + (Math.random()-0.5)*150}px;
+                            font-size: ${16 + Math.random()*34}px;
+                            --dx: ${dx}px;
+                            --dy: ${dy}px;
+                            --rot: ${rot}deg;
+                            animation-duration: ${2.2 + Math.random()*3}s;
+                        `;
+                        particle.textContent = ['💖', '✨', '🌸', '💕', '🎉', '🌟', '💝'][Math.floor(Math.random() *
+                            7)];
+                        document.body.appendChild(particle);
+
+                        setTimeout(() => {
+                            if (particle.parentNode) particle.remove();
+                        }, 3500);
+                    }
+                }, 500);
+
+                // 显示成就
+                if (superMode) {
+                    setTimeout(() => showAchievement('🌈 超级庆祝模式启动！你太甜了~'), 600);
+                }
+                if (totalClicksOnYes >= 3) {
+                    setTimeout(() => showAchievement('💎 成就：真爱无疑！点了' + totalClicksOnYes + '次愿意~'), 1000);
+                }
+
+                // 恢复状态
+                setTimeout(() => {
+                    isCelebrating = false;
+                    btnNo.style.opacity = '0';
+                    btnNo.style.pointerEvents = 'none';
+                }, 3000);
+            }
+
+            // ============ 提示气泡 ============
+            function showHintBubble(text, targetEl) {
+                const rect = targetEl.getBoundingClientRect();
+                const bubble = document.createElement('div');
+                bubble.className = 'hint-bubble';
+                bubble.textContent = text;
+                bubble.style.left = (rect.left + rect.width / 2) + 'px';
+                bubble.style.top = (rect.top - 20) + 'px';
+                document.body.appendChild(bubble);
+
+                setTimeout(() => {
+                    if (bubble.parentNode) bubble.remove();
+                }, 2200);
+            }
+
+            // ============ 成就提示 ============
+            function showAchievement(text) {
+                achievementToast.textContent = text;
+                achievementToast.classList.add('show');
+                setTimeout(() => {
+                    achievementToast.classList.remove('show');
+                }, 2800);
+            }
+
+            // ============ 空闲提示 ============
+            function resetIdleTimer() {
+                if (idleTimer) clearTimeout(idleTimer);
+                idlePromptShown = false;
+                if (!isCelebrating && fleeCount < 2) {
+                    idleTimer = setTimeout(() => {
+                        if (!idlePromptShown && !isCelebrating && fleeCount < 2) {
+                            idlePromptShown = true;
+                            showHintBubble('别犹豫啦~ 快选"愿意"嘛~ 💕', btnYes);
+                            mainEmoji.textContent = '🥺';
+                            cardSubtitle.innerHTML = '人家在等你呢~ ⏰<br>快点选嘛~';
+                        }
+                    }, 6000);
+                }
+            }
+
+            document.addEventListener('mousemove', resetIdleTimer);
+            document.addEventListener('touchstart', resetIdleTimer);
+            document.addEventListener('click', resetIdleTimer);
+            resetIdleTimer();
+
+            // ============ 初始化 ============
+            function initBtnNoPosition() {
+                // 确保按钮在btnRow中正常布局
+                if (btnNo.parentElement !== btnRow && !isCelebrating) {
+                    btnNo.style.position = '';
+                    btnNo.style.left = '';
+                    btnNo.style.top = '';
+                    btnNo.style.margin = '';
+                    btnNo.style.zIndex = '';
+                    btnNo.classList.remove('fleeing');
+                    btnRow.appendChild(btnNo);
+                    btnNoRect = null;
+                }
+            }
+
+            // 窗口大小改变时，如果按钮在body中，确保它在可视范围内
+            window.addEventListener('resize', function() {
+                if (btnNo.parentElement === document.body) {
+                    const left = parseFloat(btnNo.style.left) || 100;
+                    const top = parseFloat(btnNo.style.top) || 100;
+                    const w = btnNoRect?.width || 120;
+                    const h = btnNoRect?.height || 48;
+                    const newLeft = Math.max(10, Math.min(window.innerWidth - w - 10, left));
+                    const newTop = Math.max(10, Math.min(window.innerHeight - h - 10, top));
+                    btnNo.style.left = newLeft + 'px';
+                    btnNo.style.top = newTop + 'px';
+                    btnNoRect = { left: newLeft, top: newTop, width: w, height: h };
+                }
+            });
+
+            // ============ 彩蛋：键盘快捷键 ============
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'y' || e.key === 'Y') {
+                    // 按Y触发愿意
+                    if (!isCelebrating) {
+                        btnYes.click();
+                    }
+                } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e
+                    .key === 'ArrowRight') {
+                    // 方向键移动不愿意按钮
+                    if (btnNo.parentElement === document.body && !isCelebrating && !btnNo.dataset
+                        .surrendered) {
+                        const step = 40;
+                        let left = parseFloat(btnNo.style.left) || 100;
+                        let top = parseFloat(btnNo.style.top) || 100;
+                        if (e.key === 'ArrowLeft') left -= step;
+                        if (e.key === 'ArrowRight') left += step;
+                        if (e.key === 'ArrowUp') top -= step;
+                        if (e.key === 'ArrowDown') top += step;
+                        left = Math.max(10, Math.min(window.innerWidth - 100, left));
+                        top = Math.max(10, Math.min(window.innerHeight - 50, top));
+                        btnNo.style.left = left + 'px';
+                        btnNo.style.top = top + 'px';
+                        btnNoRect = { left, top, width: btnNoRect?.width || 120, height: btnNoRect?.height || 48 };
+                        e.preventDefault();
+                    }
+                }
+            });
+
+            console.log('🌸 心动实验室已就绪！');
+            console.log('💡 小提示：');
+            console.log('  - 试试用鼠标靠近"emmm..."按钮~');
+            console.log('  - 点击页面任意位置会有爱心哦~');
+            console.log('  - 按键盘 Y 键可以快速选择"愿意"');
+            console.log('  - 方向键可以移动逃跑的按钮~');
+            console.log('  - 双击"愿意"按钮触发超级庆祝模式！');
+            console.log('  - 追捕按钮5次和10次有隐藏成就~');
+            console.log('💖 祝你们玩得开心！');
+        })();
+    </script>
+</body>
+</html>

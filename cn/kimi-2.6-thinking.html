@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ 快乐制造机 ✨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #ffecd2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ctext y='28' font-size='28'%3E💖%3C/text%3E%3C/svg%3E"), auto;
+        }
+
+        /* 背景漂浮粒子 */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: float 15s infinite ease-in-out;
+            opacity: 0.6;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* 区域1：点击冒爱心 */
+        .click-zone {
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 3px dashed #ff6b9d;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .click-zone h2 {
+            color: #ff6b9d;
+            margin-bottom: 10px;
+        }
+
+        .click-hint {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .heart-popup {
+            position: absolute;
+            font-size: 2em;
+            pointer-events: none;
+            animation: popUp 1s ease-out forwards;
+        }
+
+        @keyframes popUp {
+            0% { transform: scale(0) translateY(0); opacity: 1; }
+            100% { transform: scale(1.5) translateY(-100px); opacity: 0; }
+        }
+
+        /* 区域2：喜欢程度滑块 */
+        .slider-container {
+            margin: 20px 0;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 20px;
+            border-radius: 10px;
+            background: linear-gradient(to right, #ffecd2, #fcb69f, #ff6b9d, #c44569);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid #ff6b9d;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255,107,157,0.4);
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slider-value {
+            text-align: center;
+            font-size: 2em;
+            margin-top: 15px;
+            color: #ff6b9d;
+            min-height: 50px;
+            font-weight: bold;
+        }
+
+        /* 区域3：别点我按钮 */
+        .naughty-btn {
+            background: linear-gradient(45deg, #ff6b9d, #c44569);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.3em;
+            border-radius: 50px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(255,107,157,0.4);
+            font-weight: bold;
+        }
+
+        .naughty-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(255,107,157,0.6);
+        }
+
+        .naughty-btn:active {
+            transform: scale(0.95);
+        }
+
+        .runaway {
+            position: fixed;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+        }
+
+        /* 区域4：彩虹打字机 */
+        .typewriter {
+            font-size: 1.3em;
+            line-height: 1.8;
+            color: #555;
+            min-height: 100px;
+        }
+
+        .typewriter span {
+            display: inline-block;
+            animation: rainbow 3s infinite;
+        }
+
+        @keyframes rainbow {
+            0% { color: #ff6b9d; }
+            20% { color: #feca57; }
+            40% { color: #48dbfb; }
+            60% { color: #1dd1a1; }
+            80% { color: #5f27cd; }
+            100% { color: #ff6b9d; }
+        }
+
+        /* 区域5：小游戏 - 接爱心 */
+        .game-area {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(to bottom, #a8edea 0%, #fed6e3 100%);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        .basket {
+            position: absolute;
+            bottom: 10px;
+            width: 80px;
+            height: 60px;
+            background: #ff6b9d;
+            border-radius: 0 0 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            transition: left 0.1s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .falling-heart {
+            position: absolute;
+            font-size: 1.8em;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(320px); }
+        }
+
+        .game-score {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #c44569;
+        }
+
+        .game-start {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            cursor: pointer;
+            font-size: 1.2em;
+            color: #ff6b9d;
+            font-weight: bold;
+            border: 3px solid #ff6b9d;
+        }
+
+        /* 区域6：问答卡片 */
+        .quiz-option {
+            background: linear-gradient(45deg, #ffecd2, #fcb69f);
+            border: none;
+            padding: 15px 25px;
+            margin: 8px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1.1em;
+            color: #333;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .quiz-option:hover {
+            transform: translateY(-3px) rotate(-2deg);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .quiz-result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.3em;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* 特效文字 */
+        .shiny-text {
+            background: linear-gradient(45deg, #ff6b9d, #feca57, #48dbfb, #ff6b9d);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shine 3s ease infinite;
+            font-weight: bold;
+        }
+
+        @keyframes shine {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .hidden-message {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 20px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transition: bottom 0.5s;
+            z-index: 999;
+            font-size: 1.2em;
+            color: #ff6b9d;
+            font-weight: bold;
+        }
+
+        .hidden-message.show {
+            bottom: 30px;
+        }
+
+        /*  confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(960deg);
+                opacity: 0;
+            }
+        }
+
+        /* 抖动动画 */
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* 脉冲光圈 */
+        .pulse-ring {
+            position: absolute;
+            border: 3px solid #ff6b9d;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 背景粒子 -->
+<div id="particles"></div>
+
+<div class="container">
+    <div class="header">
+        <h1>🎉 快乐制造机 🎉</h1>
+        <p style="font-size: 1.2em; opacity: 0.9;">专门生产笑容的非法工厂 😝</p>
+    </div>
+
+    <!-- 区域1：点击冒爱心 -->
+    <div class="card">
+        <div class="click-zone" id="clickZone">
+            <h2>👆 疯狂点击这片区域！</h2>
+            <p class="click-hint">点得越快，爱心冒得越多 💕</p>
+            <p style="margin-top:10px; color:#ff6b9d; font-size:0.9em;">当前得分：<span id="clickScore">0</span></p>
+        </div>
+    </div>
+
+    <!-- 区域2：彩虹打字机 -->
+    <div class="card">
+        <h2 style="color:#555; margin-bottom:15px;">🌈 今日彩虹屁生成器</h2>
+        <div class="typewriter" id="typewriter"></div>
+        <button class="naughty-btn" onclick="generateCompliment()" style="margin-top:15px; padding:12px 30px; font-size:1em;">
+            再夸一句 ✨
+        </button>
+    </div>
+
+    <!-- 区域3：喜欢程度测试 -->
+    <div class="card">
+        <h2 style="color:#555; margin-bottom:15px;">🎚️ 你有多喜欢我？</h2>
+        <div class="slider-container">
+            <div class="slider-label">
+                <span>😒 也就那样</span>
+                <span>😍 超级无敌</span>
+            </div>
+            <input type="range" id="loveSlider" min="0" max="100" value="50">
+            <div class="slider-value" id="sliderValue">50% - 还行吧 🤔</div>
+        </div>
+    </div>
+
+    <!-- 区域4：别点我 -->
+    <div class="card" style="text-align:center;">
+        <h2 style="color:#555; margin-bottom:15px;">🚫 危险区域</h2>
+        <p style="color:#888; margin-bottom:20px;">警告：以下按钮可能会导致不可预知的后果</p>
+        <button class="naughty-btn runaway" id="runawayBtn" style="position:relative;">
+            千万别点我 👻
+        </button>
+    </div>
+
+    <!-- 区域5：默契问答 -->
+    <div class="card">
+        <h2 style="color:#555; margin-bottom:15px;">🧠 默契大考验</h2>
+        <p style="color:#666; margin-bottom:15px; font-size:1.1em;">如果我现在饿了，你会？</p>
+        <div id="quizOptions">
+            <button class="quiz-option" onclick="answerQuiz(0)">🍔 给我点外卖</button>
+            <button class="quiz-option" onclick="answerQuiz(1)">🍳 亲自下厨</button>
+            <button class="quiz-option" onclick="answerQuiz(2)">📱 发我红包自己买</button>
+            <button class="quiz-option" onclick="answerQuiz(3)">😴 假装没听见</button>
+        </div>
+        <div class="quiz-result" id="quizResult"></div>
+    </div>
+
+    <!-- 区域6：接爱心小游戏 -->
+    <div class="card">
+        <h2 style="color:#555; margin-bottom:15px;">🎮 接爱心挑战</h2>
+        <p style="color:#888; margin-bottom:10px;">移动鼠标控制篮子，接住掉落的爱心！</p>
+        <div class="game-area" id="gameArea">
+            <div class="game-score">得分: <span id="gameScore">0</span></div>
+            <div class="basket" id="basket">🧺</div>
+            <div class="game-start" id="gameStart" onclick="startGame()">
+                点击开始游戏 ▶️
+            </div>
+        </div>
+    </div>
+
+    <!-- 区域7：神秘按钮 -->
+    <div class="card" style="text-align:center;">
+        <h2 style="color:#555; margin-bottom:15px;">🎁 神秘礼物</h2>
+        <p style="color:#888; margin-bottom:20px;">按住下方按钮3秒，有惊喜哦</p>
+        <button class="naughty-btn" id="holdBtn"
+                onmousedown="startHold()"
+                onmouseup="endHold()"
+                onmouseleave="endHold()"
+                ontouchstart="startHold()"
+                ontouchend="endHold()">
+            长按我 🎀
+        </button>
+        <div id="holdProgress" style="width:0%; height:5px; background:#ff6b9d; margin-top:15px; border-radius:10px; transition:width 0.1s;"></div>
+    </div>
+</div>
+
+<div class="footer">
+    <p class="shiny-text" style="font-size:1.5em;">✨ 希望你今天开心 ✨</p>
+    <p style="margin-top:10px; opacity:0.8;">Made with 💖 and too much caffeine</p>
+</div>
+
+<div class="hidden-message" id="hiddenMessage">
+    🎉 被你发现啦！你是最棒的！
+</div>
+
+<script>
+    // ========== 背景粒子 ==========
+    const particles = document.getElementById('particles');
+    const emojis = ['💖', '✨', '🌸', '🎈', '🌟', '💫', '🦋', '🌈'];
+
+    function createParticle() {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.fontSize = (Math.random() * 20 + 15) + 'px';
+        p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        p.style.animationDelay = Math.random() * 5 + 's';
+        particles.appendChild(p);
+        setTimeout(() => p.remove(), 20000);
+    }
+
+    for(let i = 0; i < 15; i++) createParticle();
+    setInterval(createParticle, 2000);
+
+    // ========== 点击冒爱心 ==========
+    const clickZone = document.getElementById('clickZone');
+    let clickScore = 0;
+
+    clickZone.addEventListener('click', (e) => {
+        clickScore++;
+        document.getElementById('clickScore').textContent = clickScore;
+
+        const heart = document.createElement('div');
+        heart.className = 'heart-popup';
+        heart.textContent = ['💖', '💕', '💗', '💝', '💘'][Math.floor(Math.random() * 5)];
+        heart.style.left = (e.offsetX - 20) + 'px';
+        heart.style.top = (e.offsetY - 20) + 'px';
+        heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+        clickZone.appendChild(heart);
+
+        // 脉冲效果
+        const ring = document.createElement('div');
+        ring.className = 'pulse-ring';
+        ring.style.left = (e.offsetX - 25) + 'px';
+        ring.style.top = (e.offsetY - 25) + 'px';
+        ring.style.width = '50px';
+        ring.style.height = '50px';
+        clickZone.appendChild(ring);
+
+        setTimeout(() => {
+            heart.remove();
+            ring.remove();
+        }, 1000);
+
+        if(clickScore % 20 === 0) {
+            createConfetti();
+        }
+    });
+
+    // ========== 彩虹打字机 ==========
+    const compliments = [
+        "你笑起来的时候，整个世界都亮了 🌟",
+        "你是我见过最可爱的生物，包括小猫小狗 🐱",
+        "和你聊天比喝奶茶还让人上瘾 🧋",
+        "你的存在本身就是一份礼物 🎁",
+        "如果可爱是罪，你应该被判无期徒刑 👮",
+        "你今天也很好看，明天也是，后天也是 ✨",
+        "你是宇宙限量版的快乐 🌌",
+        "遇到你之后，我的运气都变好了 🍀"
+    ];
+
+    let typeIndex = 0;
+    function typeWriter(text, element) {
+        element.innerHTML = '';
+        // 按 Unicode 码点拆分，避免 emoji（代理对）被拆成乱码
+        const chars = Array.from(text);
+        let i = 0;
+        const colors = ['#ff6b9d', '#feca57', '#48dbfb', '#1dd1a1', '#5f27cd'];
+
+        function type() {
+            if(i < chars.length) {
+                const span = document.createElement('span');
+                span.textContent = chars[i];
+                span.style.animationDelay = (i * 0.1) + 's';
+                span.style.color = colors[i % colors.length];
+                element.appendChild(span);
+                i++;
+                setTimeout(type, 80);
+            }
+        }
+        type();
+    }
+
+    function generateCompliment() {
+        const text = compliments[typeIndex % compliments.length];
+        typeWriter(text, document.getElementById('typewriter'));
+        typeIndex++;
+    }
+
+    generateCompliment();
+
+    // ========== 喜欢程度滑块 ==========
+    const slider = document.getElementById('loveSlider');
+    const sliderValue = document.getElementById('sliderValue');
+    const sliderTexts = [
+        "0% - 你确定？😭",
+        "10% - 再想想？🥺",
+        "20% - 这么勉强吗 😅",
+        "30% - 还行吧 🤔",
+        "40% - 有点意思 😉",
+        "50% - 渐入佳境 😊",
+        "60% - 越来越喜欢了 🥰",
+        "70% - 已经放不下了 💕",
+        "80% - 超级喜欢你！💖",
+        "90% - 没有你我怎么办 😍",
+        "100% - 这辈子就你了！💍"
+    ];
+
+    slider.addEventListener('input', () => {
+        const val = parseInt(slider.value);
+        const index = Math.floor(val / 10);
+        sliderValue.textContent = sliderTexts[Math.min(index, 10)];
+        sliderValue.style.transform = `scale(${1 + val/200})`;
+
+        if(val === 100) {
+            createConfetti();
+            sliderValue.innerHTML = "100% - 这辈子就你了！💍<<br><small style='color:#888'>（ confetti 已发射 🎉）</small>";
+        }
+    });
+
+    // ========== 逃跑按钮 ==========
+    const runawayBtn = document.getElementById('runawayBtn');
+    let runawayCount = 0;
+
+    runawayBtn.addEventListener('mouseover', () => {
+        if(runawayCount < 5) {
+            const x = Math.random() * (window.innerWidth - 200);
+            const y = Math.random() * (window.innerHeight - 100);
+            runawayBtn.style.left = x + 'px';
+            runawayBtn.style.top = y + 'px';
+            runawayBtn.textContent = ['抓不到我！', '太慢啦！', '在这里！', '嘿嘿！', '再快点！'][runawayCount % 5];
+            runawayCount++;
+        } else {
+            runawayBtn.textContent = "好吧，给你点 😘";
+            runawayBtn.style.position = 'relative';
+            runawayBtn.style.left = '0';
+            runawayBtn.style.top = '0';
+        }
+    });
+
+    runawayBtn.addEventListener('click', () => {
+        if(runawayCount >= 5) {
+            createConfetti();
+            runawayBtn.textContent = "🎉 恭喜你抓到我啦！";
+            runawayBtn.style.background = "linear-gradient(45deg, #1dd1a1, #48dbfb)";
+        }
+    });
+
+    // ========== 默契问答 ==========
+    function answerQuiz(choice) {
+        const result = document.getElementById('quizResult');
+        const messages = [
+            "🍔 外卖侠！你懂我！加鸡腿！",
+            "🍳 哇！亲自下厨？这必须是真爱了！",
+            "💰 简单粗暴，我喜欢！最实际的浪漫！",
+            "😴 ... 你完了，我要记在小本本上 📝"
+        ];
+        result.innerHTML = messages[choice];
+        result.style.display = 'block';
+        result.style.background = ['#ffecd2', '#d4f1f4', '#ffdde1', '#e8e8e8'][choice];
+
+        if(choice === 3) {
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 500);
+        } else {
+            createConfetti();
+        }
+    }
+
+    // ========== 接爱心游戏 ==========
+    let gameRunning = false;
+    let gameScore = 0;
+    let gameInterval;
+    const gameArea = document.getElementById('gameArea');
+    const basket = document.getElementById('basket');
+
+    gameArea.addEventListener('mousemove', (e) => {
+        const rect = gameArea.getBoundingClientRect();
+        let x = e.clientX - rect.left - 40;
+        x = Math.max(0, Math.min(x, rect.width - 80));
+        basket.style.left = x + 'px';
+    });
+
+    gameArea.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const rect = gameArea.getBoundingClientRect();
+        let x = e.touches[0].clientX - rect.left - 40;
+        x = Math.max(0, Math.min(x, rect.width - 80));
+        basket.style.left = x + 'px';
+    });
+
+    function startGame() {
+        if(gameRunning) return;
+        gameRunning = true;
+        gameScore = 0;
+        document.getElementById('gameScore').textContent = '0';
+        document.getElementById('gameStart').style.display = 'none';
+
+        gameInterval = setInterval(() => {
+            const heart = document.createElement('div');
+            heart.className = 'falling-heart';
+            heart.textContent = '💖';
+            heart.style.left = Math.random() * (gameArea.offsetWidth - 30) + 'px';
+            heart.style.top = '-30px';
+            heart.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            gameArea.appendChild(heart);
+
+            const fallDuration = parseFloat(heart.style.animationDuration) * 1000;
+
+            setTimeout(() => {
+                const heartRect = heart.getBoundingClientRect();
+                const basketRect = basket.getBoundingClientRect();
+                const gameRect = gameArea.getBoundingClientRect();
+
+                const heartX = heartRect.left - gameRect.left;
+                const basketX = basketRect.left - gameRect.left;
+
+                if(Math.abs(heartX - basketX) < 60) {
+                    gameScore++;
+                    document.getElementById('gameScore').textContent = gameScore;
+                    heart.textContent = '✨';
+                    heart.style.fontSize = '2.5em';
+                }
+
+                setTimeout(() => heart.remove(), 500);
+            }, fallDuration);
+        }, 800);
+
+        // 30秒结束
+        setTimeout(() => {
+            clearInterval(gameInterval);
+            gameRunning = false;
+            document.getElementById('gameStart').style.display = 'block';
+            document.getElementById('gameStart').textContent = `游戏结束！得分: ${gameScore} 点击再玩 ▶️`;
+            if(gameScore > 10) createConfetti();
+        }, 30000);
+    }
+
+    // ========== 长按神秘礼物 ==========
+    let holdTimer;
+    let holdProgress = 0;
+    let holding = false;
+
+    function startHold() {
+        holding = true;
+        holdProgress = 0;
+        const progress = document.getElementById('holdProgress');
+        const btn = document.getElementById('holdBtn');
+
+        holdTimer = setInterval(() => {
+            if(!holding) return;
+            holdProgress += 2;
+            progress.style.width = holdProgress + '%';
+
+            if(holdProgress >= 100) {
+                clearInterval(holdTimer);
+                holding = false;
+                progress.style.width = '0%';
+                btn.textContent = '🎉 惊喜送达！';
+                showHiddenMessage("🎁 神秘礼物：一个超级大的拥抱！🤗");
+                createConfetti();
+                setTimeout(() => {
+                    btn.textContent = '长按我 🎀';
+                }, 3000);
+            }
+        }, 30);
+    }
+
+    function endHold() {
+        holding = false;
+        clearInterval(holdTimer);
+        document.getElementById('holdProgress').style.width = '0%';
+    }
+
+    function showHiddenMessage(text) {
+        const msg = document.getElementById('hiddenMessage');
+        msg.textContent = text;
+        msg.classList.add('show');
+        setTimeout(() => msg.classList.remove('show'), 3000);
+    }
+
+    // ========== 彩纸特效 ==========
+    function createConfetti() {
+        const colors = ['#ff6b9d', '#feca57', '#48dbfb', '#1dd1a1', '#5f27cd', '#ffecd2'];
+        for(let i = 0; i < 50; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti';
+            c.style.left = Math.random() * 100 + 'vw';
+            c.style.background = colors[Math.floor(Math.random() * colors.length)];
+            c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+            c.style.width = (Math.random() * 10 + 5) + 'px';
+            c.style.height = (Math.random() * 10 + 5) + 'px';
+            c.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear forwards`;
+            document.body.appendChild(c);
+            setTimeout(() => c.remove(), 5000);
+        }
+    }
+
+    // ========== 彩蛋：键盘输入 "love" ==========
+    let keySequence = '';
+    document.addEventListener('keydown', (e) => {
+        keySequence += e.key.toLowerCase();
+        if(keySequence.includes('love')) {
+            keySequence = '';
+            createConfetti();
+            showHiddenMessage("💖 你输入了爱的密码！💖");
+            document.body.style.animation = 'shake 0.5s';
+            setTimeout(() => document.body.style.animation = '', 500);
+        }
+        if(keySequence.length > 10) keySequence = keySequence.slice(-10);
+    });
+</script>
+</body>
+</html>

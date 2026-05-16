@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>哄你专用小工具 💕</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #ffeef8 0%, #ffd6e8 50%, #fff0f5 100%);
+        font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    /* 飘落的爱心 */
+    .heart-rain {
+        position: fixed;
+        top: -50px;
+        font-size: 20px;
+        animation: fall linear infinite;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    @keyframes fall {
+        to {
+            transform: translateY(110vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+    /* 顶部标题 */
+    .header {
+        text-align: center;
+        padding: 40px 20px 20px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .header h1 {
+        font-size: 3rem;
+        color: #ff4d8d;
+        text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(255,77,141,0.2);
+        animation: wiggle 3s ease-in-out infinite;
+    }
+
+    @keyframes wiggle {
+        0%, 100% { transform: rotate(-2deg); }
+        50% { transform: rotate(2deg); }
+    }
+
+    .header p {
+        color: #ff6b9d;
+        font-size: 1.1rem;
+        margin-top: 10px;
+        letter-spacing: 2px;
+    }
+
+    /* 主容器 */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 25px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .panel {
+        background: rgba(255,255,255,0.85);
+        border-radius: 25px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(255,105,180,0.2);
+        border: 3px solid #ffb8d4;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+
+    .panel:hover {
+        transform: translateY(-5px);
+    }
+
+    .panel h2 {
+        color: #ff4d8d;
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+        text-align: center;
+        border-bottom: 2px dashed #ffb8d4;
+        padding-bottom: 10px;
+    }
+
+    /* 1. 戳猫猫 */
+    .cat-area {
+        text-align: center;
+        padding: 20px 0;
+    }
+
+    .cat {
+        font-size: 8rem;
+        cursor: pointer;
+        display: inline-block;
+        transition: transform 0.2s;
+        filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
+    }
+
+    .cat:hover { transform: scale(1.1); }
+    .cat.poked { animation: shake 0.4s; }
+
+    @keyframes shake {
+        0%, 100% { transform: scale(1) rotate(0); }
+        25% { transform: scale(1.2) rotate(-15deg); }
+        50% { transform: scale(0.9) rotate(15deg); }
+        75% { transform: scale(1.15) rotate(-10deg); }
+    }
+
+    .cat-status {
+        margin-top: 15px;
+        color: #ff4d8d;
+        font-size: 1.1rem;
+        min-height: 30px;
+        font-weight: bold;
+    }
+
+    .poke-count {
+        color: #888;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+
+    /* 2. 情话生成器 */
+    .love-text {
+        background: linear-gradient(135deg, #fff5f8, #ffe0ec);
+        padding: 25px 20px;
+        border-radius: 15px;
+        text-align: center;
+        font-size: 1.1rem;
+        color: #d63384;
+        min-height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1.8;
+        border: 2px dashed #ffb8d4;
+        font-weight: 500;
+    }
+
+    .btn {
+        background: linear-gradient(45deg, #ff6b9d, #ff4d8d);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 15px;
+        width: 100%;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(255,77,141,0.4);
+        transition: all 0.3s;
+        letter-spacing: 2px;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255,77,141,0.6);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    /* 3. 抽签 */
+    .fortune-box {
+        text-align: center;
+    }
+
+    .fortune-card {
+        background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+        border-radius: 15px;
+        padding: 25px 20px;
+        margin: 10px 0;
+        font-size: 1.1rem;
+        color: #c2185b;
+        font-weight: bold;
+        min-height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid #ec407a;
+        box-shadow: inset 0 0 20px rgba(236,64,122,0.1);
+        transition: transform 0.5s;
+    }
+
+    .fortune-card.flip { animation: cardFlip 0.6s; }
+
+    @keyframes cardFlip {
+        0% { transform: rotateY(0); }
+        50% { transform: rotateY(90deg); }
+        100% { transform: rotateY(0); }
+    }
+
+    /* 4. 心动指数 */
+    .meter-wrap {
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    .meter {
+        width: 100%;
+        height: 30px;
+        background: #ffe0ec;
+        border-radius: 15px;
+        overflow: hidden;
+        margin: 15px 0;
+        border: 2px solid #ffb8d4;
+        position: relative;
+    }
+
+    .meter-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #ff9ec7, #ff4d8d, #d63384);
+        transition: width 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        border-radius: 13px;
+        box-shadow: 0 0 15px rgba(255,77,141,0.6);
+    }
+
+    .meter-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #fff;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        z-index: 2;
+    }
+
+    .meter-comment {
+        color: #ff4d8d;
+        font-size: 1.1rem;
+        margin-top: 10px;
+        min-height: 30px;
+        font-weight: bold;
+    }
+
+    /* 5. 调皮按钮 */
+    .naughty-area {
+        text-align: center;
+        padding: 20px 10px;
+        position: relative;
+        height: 200px;
+    }
+
+    .yes-btn {
+        background: linear-gradient(45deg, #ff4d8d, #ff6b9d);
+        color: white;
+        border: none;
+        padding: 15px 35px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        font-weight: bold;
+        margin: 0 10px;
+        box-shadow: 0 4px 15px rgba(255,77,141,0.5);
+        transition: transform 0.3s;
+    }
+
+    .yes-btn:hover { transform: scale(1.2); }
+
+    .no-btn {
+        background: #ddd;
+        color: #999;
+        border: none;
+        padding: 15px 35px;
+        border-radius: 50px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin: 0 10px;
+        position: relative;
+        transition: all 0.2s;
+    }
+
+    .naughty-question {
+        color: #ff4d8d;
+        font-size: 1.2rem;
+        margin-bottom: 25px;
+        font-weight: bold;
+    }
+
+    /* 6. 投喂区 */
+    .feed-area {
+        text-align: center;
+    }
+
+    .pet {
+        font-size: 5rem;
+        margin: 10px 0;
+        display: inline-block;
+        transition: transform 0.3s;
+    }
+
+    .pet.eating { animation: eat 0.5s; }
+
+    @keyframes eat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.3) rotate(-10deg); }
+    }
+
+    .food-bar {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        margin: 15px 0;
+    }
+
+    .food {
+        font-size: 2.5rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.2s;
+        background: rgba(255,255,255,0.5);
+        margin: 5px;
+    }
+
+    .food:hover {
+        transform: scale(1.2) rotate(15deg);
+        background: rgba(255,180,210,0.5);
+    }
+
+    .happiness {
+        color: #ff4d8d;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    /* 漂浮文字 */
+    .float-text {
+        position: fixed;
+        pointer-events: none;
+        font-size: 1.5rem;
+        color: #ff4d8d;
+        font-weight: bold;
+        animation: floatUp 1.5s forwards;
+        z-index: 9999;
+        text-shadow: 0 0 10px white;
+    }
+
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(0.5); opacity: 0; }
+        20% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+        100% { transform: translateY(-100px) scale(1); opacity: 0; }
+    }
+
+    /* 弹窗 */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal.show { display: flex; animation: fadeIn 0.3s; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-content {
+        background: linear-gradient(135deg, #fff, #ffe0ec);
+        padding: 40px 50px;
+        border-radius: 25px;
+        text-align: center;
+        max-width: 400px;
+        border: 4px solid #ff4d8d;
+        animation: bounceIn 0.5s;
+    }
+
+    @keyframes bounceIn {
+        0% { transform: scale(0.3); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .modal-content h3 {
+        color: #ff4d8d;
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+
+    .modal-content p {
+        color: #d63384;
+        font-size: 1.1rem;
+        line-height: 1.8;
+        margin-bottom: 20px;
+    }
+
+    /* 底部 */
+    .footer {
+        text-align: center;
+        padding: 30px 20px;
+        color: #ff6b9d;
+        position: relative;
+        z-index: 2;
+    }
+
+    .footer .signature {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>💕 哄你专用小工具 💕</h1>
+    <p>✿ 全 网 最 甜 ✿ 仅 限 一 人 食 用 ✿</p>
+</div>
+
+<div class="container">
+
+    <!-- 戳猫猫 -->
+    <div class="panel">
+        <h2>🐱 戳猫猫减压</h2>
+        <div class="cat-area">
+            <div class="cat" id="cat" onclick="pokeCat()">😺</div>
+            <div class="cat-status" id="catStatus">点我呀～</div>
+            <div class="poke-count" id="pokeCount">已被戳 0 次</div>
+        </div>
+    </div>
+
+    <!-- 情话生成器 -->
+    <div class="panel">
+        <h2>💌 今日情话</h2>
+        <div class="love-text" id="loveText">点下面按钮开始撩你～</div>
+        <button class="btn" onclick="generateLove()">再 来 一 句 ♡</button>
+    </div>
+
+    <!-- 抽签 -->
+    <div class="panel">
+        <h2>🎰 今日运势抽签</h2>
+        <div class="fortune-box">
+            <div class="fortune-card" id="fortune">点击下方抽一张～</div>
+            <button class="btn" onclick="drawFortune()">抽 一 签 🎴</button>
+        </div>
+    </div>
+
+    <!-- 心动指数 -->
+    <div class="panel">
+        <h2>💗 今日他对你的心动指数</h2>
+        <div class="meter-wrap">
+            <div class="meter">
+                <div class="meter-fill" id="meterFill"></div>
+                <div class="meter-text" id="meterText">0%</div>
+            </div>
+            <div class="meter-comment" id="meterComment">点下方按钮检测～</div>
+            <button class="btn" onclick="checkLove()">开 始 检 测 💘</button>
+        </div>
+    </div>
+
+    <!-- 调皮按钮 -->
+    <div class="panel">
+        <h2>😏 灵 魂 拷 问</h2>
+        <div class="naughty-area">
+            <div class="naughty-question">你今天可爱吗？</div>
+            <button class="yes-btn" onclick="showAnswer()">是 ♡</button>
+            <button class="no-btn" id="noBtn"
+                    onmouseover="runAway()"
+                    onclick="showAnswer()">不是</button>
+        </div>
+    </div>
+
+    <!-- 投喂 -->
+    <div class="panel">
+        <h2>🍰 投喂小宠物</h2>
+        <div class="feed-area">
+            <div class="pet" id="pet">🐰</div>
+            <div class="food-bar">
+                <div class="food" onclick="feed('🍓', 5)">🍓</div>
+                <div class="food" onclick="feed('🍰', 10)">🍰</div>
+                <div class="food" onclick="feed('🍦', 8)">🍦</div>
+                <div class="food" onclick="feed('🍩', 7)">🍩</div>
+                <div class="food" onclick="feed('🍪', 6)">🍪</div>
+                <div class="food" onclick="feed('🥕', 3)">🥕</div>
+            </div>
+            <div class="happiness" id="happiness">幸福值: 50 ♡</div>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer">
+    <p>✦ 心动一整天 你最可爱啦 ✦</p>
+    <p class="signature">made with 💖 for the cutest one</p>
+</div>
+
+<!-- 弹窗 -->
+<div class="modal" id="modal" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 id="modalTitle">就知道你会选这个！</h3>
+        <p id="modalText">毕竟你这么可爱呀～</p>
+        <button class="btn" onclick="closeModal()">嗯哼 ♡</button>
+    </div>
+</div>
+
+<script>
+    /* ===== 飘落爱心 ===== */
+    const hearts = ['💖','💕','💗','💓','💞','💘','💝','🌸','🌷','✨','💫','⭐'];
+    setInterval(() => {
+        const h = document.createElement('div');
+        h.className = 'heart-rain';
+        h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        h.style.left = Math.random() * 100 + 'vw';
+        h.style.fontSize = (15 + Math.random() * 25) + 'px';
+        h.style.animationDuration = (5 + Math.random() * 5) + 's';
+        h.style.opacity = 0.4 + Math.random() * 0.5;
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 10000);
+    }, 400);
+
+    /* ===== 戳猫猫 ===== */
+    let pokeNum = 0;
+    const catFaces = ['😺','😸','😹','😻','😼','😽','🙀','😿','😾','🐱','😸','😻'];
+    const catReact = [
+        '喵～ 不要戳啦',
+        '再戳就生气了哦',
+        '哼！讨厌～',
+        '喵呜～痒痒的',
+        '你也太烦了吧！',
+        '猫猫不开心 (´;ω;`)',
+        '好啦好啦再让你戳一下',
+        '这次真的最后一次了',
+        '喵：我 罢 工 了',
+        '嘤嘤嘤 你欺负我！',
+        '再戳就要扑你脸上了哦',
+        '猫猫表示很无语 ˊ_>ˋ'
+    ];
+    function pokeCat() {
+        pokeNum++;
+        const cat = document.getElementById('cat');
+        cat.textContent = catFaces[Math.floor(Math.random() * catFaces.length)];
+        cat.classList.remove('poked');
+        void cat.offsetWidth;
+        cat.classList.add('poked');
+        document.getElementById('catStatus').textContent = catReact[Math.floor(Math.random() * catReact.length)];
+        document.getElementById('pokeCount').textContent = `已被戳 ${pokeNum} 次`;
+        floatText(event.clientX, event.clientY, '喵！');
+        if (pokeNum % 10 === 0) {
+            showModal('🐱 猫猫投降啦！', `你已经戳了我${pokeNum}次了！我不是真猫呀～`);
+        }
+    }
+
+    /* ===== 情话生成器 ===== */
+    const loveLines = [
+        '我喜欢的人很优秀，是你呀。',
+        '世界上有那么多人，多幸运我有个我们。',
+        '你笑起来真好看，像春天的花一样。',
+        '今天的风很喧嚣，今天的我很想你。',
+        '你是我躲不开的星辰，沾不到的月光。',
+        '我想做你余生的小朋友，做你晚安的最后一句。',
+        '据说，亲一下能消除疲劳，要不要试试？',
+        '你今天有点怪，怪好看的。',
+        '想牵你的手，从下午散步到下个世纪。',
+        '我的心脏，仅此一颗，给你了。',
+        '别的甜我可以不要，但你这颗甜不可以。',
+        '听说你今天没吃糖？没关系，亲我一下就好啦。',
+        '在你身上有种久别重逢的感觉。',
+        '我对你的心动，是没有日落的午后。',
+        '你的名字，是我见过最美的情诗。',
+        '风很温柔，云很温柔，喜欢你不必温柔。',
+        '想把你介绍给我妈，下半句是我妈也很喜欢你。',
+        '今天月亮很亮，但还是没有你亮。',
+        '你不必那么完美，我喜欢你刚刚好。',
+        '你嘴角那颗痣，是我余生的甜。'
+    ];
+    function generateLove() {
+        const el = document.getElementById('loveText');
+        el.style.opacity = 0;
+        setTimeout(() => {
+            el.textContent = loveLines[Math.floor(Math.random() * loveLines.length)];
+            el.style.transition = 'opacity 0.5s';
+            el.style.opacity = 1;
+        }, 200);
+    }
+
+    /* ===== 抽签 ===== */
+    const fortunes = [
+        { lv: '大吉 ★★★★★', text: '今天会遇到喜欢的人哦～' },
+        { lv: '中吉 ★★★★', text: '宜：撒娇 / 忌：生气' },
+        { lv: '小吉 ★★★', text: '今天的奶茶记得加珍珠！' },
+        { lv: '大吉 ★★★★★', text: '今天笑一笑，运气会变好哦' },
+        { lv: '中吉 ★★★★', text: '会有意想不到的小惊喜～' },
+        { lv: '上上签 ★★★★★', text: '想要的快递今天会到！' },
+        { lv: '大吉 ★★★★★', text: '宜：吃甜品 / 忌：减肥' },
+        { lv: '吉 ★★★', text: '今天适合追剧 + 躺平 ✨' },
+        { lv: '上签 ★★★★★', text: '会被夸"今天好可爱"' },
+        { lv: '中吉 ★★★★', text: '宜：去拍照 / 忌：emo' },
+        { lv: '甜签 ♡♡♡♡♡', text: '今天会被宠成小公主！' },
+        { lv: '幸运签 ★★★★★', text: '在路上捡到 100 块也不奇怪～' }
+    ];
+    function drawFortune() {
+        const card = document.getElementById('fortune');
+        card.classList.remove('flip');
+        void card.offsetWidth;
+        card.classList.add('flip');
+        setTimeout(() => {
+            const f = fortunes[Math.floor(Math.random() * fortunes.length)];
+            card.innerHTML = `<div><div style="font-size:1.3rem;margin-bottom:10px;">${f.lv}</div><div style="font-size:1rem;">${f.text}</div></div>`;
+        }, 300);
+    }
+
+    /* ===== 心动指数 ===== */
+    const loveComments = [
+        { min: 95, text: '爆 表 啦！他想你想到睡不着！' },
+        { min: 85, text: '心 动 满 满 ♡ 他超喜欢你的！' },
+        { min: 70, text: '他在偷偷想你呢～' },
+        { min: 50, text: '稳 定 心 动 中 💕' },
+        { min: 30, text: '今天有点害羞，没敢联系你' },
+        { min: 0,  text: '...是不是该提醒他一下了？' }
+    ];
+    function checkLove() {
+        const target = 70 + Math.random() * 30;
+        document.getElementById('meterFill').style.width = target + '%';
+        let n = 0;
+        const interval = setInterval(() => {
+            n += 2;
+            if (n >= target) {
+                n = target;
+                clearInterval(interval);
+                const cm = loveComments.find(c => target >= c.min);
+                document.getElementById('meterComment').textContent = cm.text;
+            }
+            document.getElementById('meterText').textContent = Math.floor(n) + '%';
+        }, 30);
+    }
+
+    /* ===== 调皮按钮 ===== */
+    function runAway() {
+        const btn = document.getElementById('noBtn');
+        const area = btn.parentElement;
+        const maxX = area.clientWidth - btn.offsetWidth - 10;
+        const maxY = area.clientHeight - btn.offsetHeight - 10;
+        btn.style.position = 'absolute';
+        btn.style.left = Math.random() * maxX + 'px';
+        btn.style.top = Math.random() * maxY + 'px';
+    }
+    function showAnswer() {
+        showModal('🎉 答 对 啦！', '你 当 然 是 最 可 爱 的 那 个 啦 ♡');
+    }
+
+    /* ===== 投喂 ===== */
+    let happy = 50;
+    function feed(food, val) {
+        const pet = document.getElementById('pet');
+        pet.textContent = food;
+        pet.classList.remove('eating');
+        void pet.offsetWidth;
+        pet.classList.add('eating');
+        floatText(event.clientX, event.clientY, '+' + val);
+        happy = Math.min(100, happy + val);
+        setTimeout(() => {
+            const pets = ['🐰','🐹','🐱','🐶','🐻','🐼'];
+            pet.textContent = pets[Math.floor(Math.random() * pets.length)];
+            let mood = '♡';
+            if (happy >= 90) mood = '✨ 超幸福 ✨';
+            else if (happy >= 70) mood = '♡♡♡';
+            else if (happy >= 40) mood = '♡♡';
+            document.getElementById('happiness').textContent = `幸福值: ${happy} ${mood}`;
+            if (happy >= 100) {
+                showModal('💖 满 足 啦！', '小宠物：谢谢主人，我是世界上最幸福的崽！');
+                happy = 50;
+            }
+        }, 500);
+    }
+
+    /* ===== 通用 ===== */
+    function floatText(x, y, text) {
+        const t = document.createElement('div');
+        t.className = 'float-text';
+        t.textContent = text;
+        t.style.left = x + 'px';
+        t.style.top = y + 'px';
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 1500);
+    }
+
+    function showModal(title, text) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalText').textContent = text;
+        document.getElementById('modal').classList.add('show');
+    }
+    function closeModal() {
+        document.getElementById('modal').classList.remove('show');
+    }
+
+    /* 进入即来一句情话 */
+    window.addEventListener('load', generateLove);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "girl-fun-edit",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "record": "node record.js"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}

@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>给你看个好玩的东西</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a12;
+            --fg: #fff;
+            --accent: #ff6b8a;
+            --accent2: #ff8fab;
+            --rose: #e8456b;
+            --gold: #ffd700;
+            --card: rgba(255, 107, 138, 0.08);
+            --border: rgba(255, 107, 138, 0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--fg);
+            font-family: 'Noto Sans SC', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+        }
+        #starfield {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+        }
+        .main-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            transition: opacity 0.6s ease;
+        }
+        .question-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: clamp(2rem, 7vw, 4.5rem);
+            color: var(--accent);
+            margin-bottom: 0.6rem;
+            text-shadow: 0 0 40px rgba(255, 107, 138, 0.4);
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+        }
+        .question-sub {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            color: rgba(255, 143, 171, 0.6);
+            margin-bottom: 2.5rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.3s forwards;
+            font-weight: 300;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .btn-area {
+            position: relative;
+            height: 80px;
+            min-width: 360px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.6s forwards;
+        }
+        .btn-yes {
+            padding: 1rem 3rem;
+            font-size: 1.3rem;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--accent), var(--rose));
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 30px rgba(255, 107, 138, 0.4);
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+        .btn-yes::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.18), transparent);
+            animation: shimmer 2.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        .btn-yes:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 40px rgba(255, 107, 138, 0.6);
+        }
+        .btn-no {
+            padding: 1rem 3rem;
+            font-size: 1.3rem;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-weight: 500;
+            border: 2px solid var(--border);
+            border-radius: 50px;
+            background: transparent;
+            color: var(--accent2);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: fixed;
+            z-index: 50;
+        }
+        .click-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 100;
+            animation: heartFloat 1.5s ease forwards;
+        }
+        @keyframes heartFloat {
+            0% { opacity: 1; transform: scale(0) translateY(0) rotate(0deg); }
+            20% { opacity: 1; transform: scale(1.4) translateY(-10px) rotate(-10deg); }
+            100% { opacity: 0; transform: scale(0.4) translateY(-130px) rotate(15deg); }
+        }
+        .trail-star {
+            position: fixed;
+            pointer-events: none;
+            z-index: 99;
+            border-radius: 50%;
+            animation: trailFade 0.7s ease forwards;
+        }
+        @keyframes trailFade {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0); }
+        }
+        .success-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .success-overlay.active { display: flex; }
+        .success-text {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: clamp(2.5rem, 9vw, 5.5rem);
+            color: var(--accent);
+            text-shadow: 0 0 50px rgba(255, 107, 138, 0.5);
+            animation: successPulse 2s ease infinite;
+            z-index: 210;
+        }
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+        .success-sub {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            color: var(--accent2);
+            margin-top: 1rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.6s forwards;
+            z-index: 210;
+        }
+        .success-emoji {
+            margin-top: 2rem;
+            font-size: 3rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 1s forwards;
+            z-index: 210;
+        }
+        #fireworks {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 205;
+            pointer-events: none;
+        }
+        .hint-text {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 143, 171, 0.35);
+            font-size: 0.85rem;
+            z-index: 10;
+            opacity: 0;
+            animation: fadeInUp 1s ease 2.5s forwards;
+            white-space: nowrap;
+        }
+        .escape-msg {
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--accent2);
+            min-height: 1.5em;
+            transition: all 0.3s ease;
+        }
+        .sweet-barrage {
+            position: fixed;
+            z-index: 5;
+            font-size: 0.95rem;
+            color: rgba(255, 107, 138, 0.18);
+            white-space: nowrap;
+            animation: barrageMove linear forwards;
+            pointer-events: none;
+        }
+        @keyframes barrageMove {
+            from { transform: translateX(100vw); }
+            to { transform: translateX(-100%); }
+        }
+        .floating-heart {
+            position: fixed;
+            z-index: 4;
+            pointer-events: none;
+            animation: floatUp linear forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 0.12; transform: translateY(0) scale(1) rotate(0deg); }
+            50% { opacity: 0.2; }
+            100% { opacity: 0; transform: translateY(-100vh) scale(0.4) rotate(30deg); }
+        }
+        .mini-game-hint {
+            position: fixed;
+            top: 1.2rem;
+            right: 1.2rem;
+            z-index: 15;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 0.7rem 1.1rem;
+            color: var(--accent2);
+            font-size: 0.82rem;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            animation: fadeInUp 1s ease 3s forwards;
+        }
+        .score-display { color: var(--gold); font-weight: 700; }
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            z-index: 300;
+            background: rgba(20, 10, 15, 0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.2rem 2.2rem;
+            color: var(--fg);
+            font-size: 1.05rem;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        /* 光晕装饰 */
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            filter: blur(80px);
+            opacity: 0.12;
+            animation: orbFloat 10s ease-in-out infinite;
+        }
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(30px, -20px); }
+            66% { transform: translate(-20px, 15px); }
+        }
+        @media (max-width: 480px) {
+            .btn-area { min-width: 280px; }
+            .mini-game-hint { top: 0.8rem; right: 0.8rem; font-size: 0.75rem; padding: 0.5rem 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<canvas id="fireworks"></canvas>
+
+<!-- 光晕装饰 -->
+<div class="glow-orb" style="width:400px;height:400px;background:#ff6b8a;top:10%;left:5%;animation-delay:0s;"></div>
+<div class="glow-orb" style="width:350px;height:350px;background:#e8456b;bottom:15%;right:8%;animation-delay:-4s;"></div>
+<div class="glow-orb" style="width:250px;height:250px;background:#ffd700;top:50%;left:60%;animation-delay:-7s;opacity:0.06;"></div>
+
+<div class="main-container" id="mainContainer">
+    <h1 class="question-title">你愿意做我女朋友吗？</h1>
+    <p class="question-sub">这是一个非常重要的问题哦</p>
+    <div class="btn-area">
+        <button class="btn-yes" id="btnYes">愿意</button>
+    </div>
+    <div class="escape-msg" id="escapeMsg"></div>
+</div>
+
+<div class="mini-game-hint" id="miniGameHint">
+    点击屏幕收集爱心 <span class="score-display" id="heartScore">0</span>
+</div>
+
+<div class="hint-text">试试点击屏幕任何地方，或者追一下那个按钮</div>
+
+<button class="btn-no" id="btnNo">不愿意</button>
+
+<div class="success-overlay" id="successOverlay">
+    <div class="success-text">我就知道你会答应的</div>
+    <div class="success-sub">从今以后，每一天都是你的</div>
+    <div class="success-emoji">🥰</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // ====== 星空背景 ======
+    const starCanvas = document.getElementById('starfield');
+    const starCtx = starCanvas.getContext('2d');
+    let stars = [];
+
+    function resizeStarCanvas() {
+        starCanvas.width = window.innerWidth;
+        starCanvas.height = window.innerHeight;
+    }
+
+    function initStars() {
+        stars = [];
+        const count = Math.floor((window.innerWidth * window.innerHeight) / 2800);
+        for (let i = 0; i < count; i++) {
+            stars.push({
+                x: Math.random() * starCanvas.width,
+                y: Math.random() * starCanvas.height,
+                r: Math.random() * 1.5 + 0.2,
+                speed: Math.random() * 0.006 + 0.002,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+    }
+
+    function drawStars(time) {
+        starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+        // 深色渐变背景
+        const grad = starCtx.createRadialGradient(
+            starCanvas.width * 0.3, starCanvas.height * 0.3, 0,
+            starCanvas.width * 0.3, starCanvas.height * 0.3, starCanvas.width * 0.9
+        );
+        grad.addColorStop(0, '#1a0a1e');
+        grad.addColorStop(0.5, '#0f0818');
+        grad.addColorStop(1, '#0a0a12');
+        starCtx.fillStyle = grad;
+        starCtx.fillRect(0, 0, starCanvas.width, starCanvas.height);
+
+        // 绘制闪烁的星星
+        for (const s of stars) {
+            const twinkle = Math.sin(time * s.speed + s.phase) * 0.5 + 0.5;
+            starCtx.beginPath();
+            starCtx.arc(s.x, s.y, Math.max(0.1, s.r), 0, Math.PI * 2);
+            starCtx.fillStyle = `rgba(255, 220, 240, ${twinkle * 0.85})`;
+            starCtx.fill();
+        }
+        requestAnimationFrame(drawStars);
+    }
+
+    resizeStarCanvas();
+    initStars();
+    requestAnimationFrame(drawStars);
+    window.addEventListener('resize', () => { resizeStarCanvas(); initStars(); resizeFwCanvas(); });
+
+    // ====== 逃跑按钮逻辑 ======
+    const btnNo = document.getElementById('btnNo');
+    const btnYes = document.getElementById('btnYes');
+    const escapeMsgEl = document.getElementById('escapeMsg');
+    let escapeCount = 0;
+
+    const escapeMessages = [
+        '别想跑哦~',
+        '再试试看？',
+        '你确定吗？',
+        '真的不考虑一下？',
+        '人家会伤心的...',
+        '给我一个机会嘛~',
+        '按钮它自己跑了！',
+        '嘻嘻，抓不到我',
+        '心都碎啦',
+        '最后再想想嘛',
+        '你追不到我的~',
+        '投降吧，点愿意！',
+        '我还会回来的！',
+        '跑不动了...才怪！',
+    ];
+
+    // 初始化"不愿意"按钮位置
+    function initNoButton() {
+        const area = document.querySelector('.btn-area');
+        const rect = area.getBoundingClientRect();
+        btnNo.style.left = (rect.right + 30) + 'px';
+        btnNo.style.top = (rect.top + 10) + 'px';
+    }
+
+    function escapeButton() {
+        escapeCount++;
+
+        // 按钮逐渐变小
+        const scale = Math.max(0.35, 1 - escapeCount * 0.05);
+        btnNo.style.fontSize = (1.3 * scale) + 'rem';
+        btnNo.style.padding = (1 * scale) + 'rem ' + (3 * scale) + 'rem';
+
+        // "愿意"按钮逐渐变大
+        const yesScale = Math.min(1.6, 1 + escapeCount * 0.045);
+        btnYes.style.fontSize = (1.3 * yesScale) + 'rem';
+        btnYes.style.padding = (1 * yesScale) + 'rem ' + (3 * yesScale) + 'rem';
+
+        // 随机新位置
+        const bw = btnNo.offsetWidth;
+        const bh = btnNo.offsetHeight;
+        const maxX = window.innerWidth - bw - 15;
+        const maxY = window.innerHeight - bh - 15;
+        const newX = Math.random() * Math.max(0, maxX) + 10;
+        const newY = Math.random() * Math.max(0, maxY) + 10;
+
+        btnNo.style.left = newX + 'px';
+        btnNo.style.top = newY + 'px';
+
+        // 显示消息
+        const idx = Math.min(escapeCount - 1, escapeMessages.length - 1);
+        escapeMsgEl.textContent = escapeMessages[idx];
+        escapeMsgEl.style.animation = 'none';
+        escapeMsgEl.offsetHeight;
+        escapeMsgEl.style.animation = 'fadeInUp 0.4s ease forwards';
+
+        // 里程碑提示
+        if (escapeCount === 5) showToast('按钮已经吓得满地跑了~');
+        if (escapeCount === 10) showToast('它快缩没啦！');
+        if (escapeCount === 15) showToast('放弃吧，你抓不到它的~');
+    }
+
+    // 鼠标靠近就跑
+    btnNo.addEventListener('mouseenter', escapeButton);
+    // 触摸也跑
+    btnNo.addEventListener('touchstart', (e) => { e.preventDefault(); escapeButton(); });
+    // 点击也跑（以防万一）
+    btnNo.addEventListener('click', (e) => { e.preventDefault(); escapeButton(); });
+
+    // ====== 点击"愿意" ======
+    let successActive = false;
+
+    btnYes.addEventListener('click', () => {
+        if (successActive) return;
+        successActive = true;
+
+        // 隐藏主界面
+        document.getElementById('mainContainer').style.opacity = '0';
+        document.getElementById('miniGameHint').style.display = 'none';
+        document.querySelector('.hint-text').style.display = 'none';
+        btnNo.style.display = 'none';
+
+        // 显示成功页面
+        setTimeout(() => {
+            document.getElementById('successOverlay').classList.add('active');
+            startFireworks();
+            startHeartRain();
+        }, 600);
+    });
+
+    // ====== 烟花效果 ======
+    const fwCanvas = document.getElementById('fireworks');
+    const fwCtx = fwCanvas.getContext('2d');
+    let fwList = [];
+    let fwParticles = [];
+    let fwRunning = false;
+
+    function resizeFwCanvas() {
+        fwCanvas.width = window.innerWidth;
+        fwCanvas.height = window.innerHeight;
+    }
+    resizeFwCanvas();
+
+    const fwColors = [
+        () => `hsl(${Math.random() * 40 + 340}, 100%, 68%)`,  // 粉红
+        () => `hsl(${Math.random() * 30 + 20}, 100%, 65%)`,   // 橙金
+        () => `hsl(${Math.random() * 30 + 50}, 100%, 70%)`,   // 金黄
+        () => `hsl(${Math.random() * 40 + 300}, 90%, 72%)`,   // 玫红
+    ];
+
+    class Firework {
+        constructor() {
+            this.x = Math.random() * fwCanvas.width;
+            this.y = fwCanvas.height;
+            this.targetY = Math.random() * fwCanvas.height * 0.35 + 40;
+            this.speed = 5 + Math.random() * 3;
+            this.alive = true;
+            this.colorFn = fwColors[Math.floor(Math.random() * fwColors.length)];
+            this.trail = [];
+        }
+        update() {
+            this.trail.push({ x: this.x, y: this.y });
+            if (this.trail.length > 6) this.trail.shift();
+            this.y -= this.speed;
+            if (this.y <= this.targetY) {
+                this.alive = false;
+                this.explode();
+            }
+        }
+        draw() {
+            // 拖尾
+            for (let i = 0; i < this.trail.length; i++) {
+                const t = this.trail[i];
+                const a = (i / this.trail.length) * 0.5;
+                fwCtx.beginPath();
+                fwCtx.arc(t.x, t.y, Math.max(0.5, 1.5 * (i / this.trail.length)), 0, Math.PI * 2);
+                fwCtx.fillStyle = `rgba(255, 200, 220, ${a})`;
+                fwCtx.fill();
+            }
+            fwCtx.beginPath();
+            fwCtx.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
+            fwCtx.fillStyle = '#fff';
+            fwCtx.fill();
+        }
+        explode() {
+            const count = 70 + Math.floor(Math.random() * 50);
+            for (let i = 0; i < count; i++) {
+                const angle = (Math.PI * 2 / count) * i + Math.random() * 0.2;
+                const speed = Math.random() * 5 + 1.5;
+                fwParticles.push({
+                    x: this.x,
+                    y: this.y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1,
+                    decay: Math.random() * 0.015 + 0.008,
+                    color: this.colorFn(),
+                    size: Math.random() * 2.5 + 0.8
+                });
+            }
+            // 额外的金色闪光
+            for (let i = 0; i < 15; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 7 + 2;
+                fwParticles.push({
+                    x: this.x,
+                    y: this.y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1,
+                    decay: Math.random() * 0.025 + 0.015,
+                    color: '#ffd700',
+                    size: Math.random() * 1.5 + 0.5
+                });
+            }
+        }
+    }
+
+    function animateFireworks() {
+        if (!fwRunning) return;
+
+        fwCtx.globalCompositeOperation = 'destination-out';
+        fwCtx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+        fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height);
+        fwCtx.globalCompositeOperation = 'lighter';
+
+        // 随机添加新烟花
+        if (Math.random() < 0.1) fwList.push(new Firework());
+
+        // 更新烟花
+        fwList = fwList.filter(fw => {
+            fw.update();
+            if (fw.alive) fw.draw();
+            return fw.alive;
+        });
+
+        // 更新粒子
+        fwParticles = fwParticles.filter(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.045;
+            p.vx *= 0.99;
+            p.life -= p.decay;
+            if (p.life <= 0) return false;
+
+            fwCtx.beginPath();
+            fwCtx.arc(p.x, p.y, Math.max(0.1, p.size * p.life), 0, Math.PI * 2);
+            fwCtx.fillStyle = p.color;
+            fwCtx.globalAlpha = p.life;
+            fwCtx.fill();
+            fwCtx.globalAlpha = 1;
+            return true;
+        });
+
+        requestAnimationFrame(animateFireworks);
+    }
+
+    function startFireworks() {
+        fwRunning = true;
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => fwList.push(new Firework()), i * 150);
+        }
+        animateFireworks();
+    }
+
+    // ====== 爱心雨 ======
+    function heartSVG(size, color) {
+        return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    }
+
+    function startHeartRain() {
+        const colors = ['#ff6b8a', '#ff8fab', '#e8456b', '#ffb6c1', '#ff69b4'];
+        setInterval(() => {
+            const heart = document.createElement('div');
+            heart.className = 'floating-heart';
+            heart.innerHTML = heartSVG(16 + Math.random() * 16, colors[Math.floor(Math.random() * colors.length)]);
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.bottom = '-30px';
+            heart.style.animationDuration = (5 + Math.random() * 5) + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 10000);
+        }, 250);
+    }
+
+    // ====== 点击爱心效果 ======
+    let heartScore = 0;
+    const heartSymbols = ['❤️', '💖', '💕', '💗', '🌸', '✨', '💝', '💓', '🩷'];
+
+    document.addEventListener('click', (e) => {
+        if (successActive) return;
+        if (e.target === btnNo || e.target === btnYes) return;
+
+        heartScore++;
+        document.getElementById('heartScore').textContent = heartScore;
+
+        // 创建多个爱心
+        const count = 3 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < count; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'click-heart';
+            heart.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+            heart.style.left = (e.clientX + (Math.random() - 0.5) * 50) + 'px';
+            heart.style.top = (e.clientY + (Math.random() - 0.5) * 50) + 'px';
+            heart.style.fontSize = (1.1 + Math.random() * 1.2) + 'rem';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 1500);
+        }
+
+        // 里程碑
+        if (heartScore === 10) showToast('你真有爱心~');
+        if (heartScore === 30) showToast('爱心收割机！');
+        if (heartScore === 50) showToast('你是爱心大魔王！');
+        if (heartScore === 100) showToast('爱心之神降临！');
+    });
+
+    // ====== 鼠标拖尾 ======
+    let trailThrottle = 0;
+    const trailColors = ['#ffd700', '#ff6b8a', '#ff8fab', '#ffb6c1', '#ff69b4', '#ffaacc'];
+
+    document.addEventListener('mousemove', (e) => {
+        trailThrottle++;
+        if (trailThrottle % 2 !== 0) return;
+
+        const star = document.createElement('div');
+        star.className = 'trail-star';
+        star.style.left = e.clientX + 'px';
+        star.style.top = e.clientY + 'px';
+        star.style.background = trailColors[Math.floor(Math.random() * trailColors.length)];
+        const size = 3 + Math.random() * 5;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.boxShadow = `0 0 ${size}px ${star.style.background}`;
+
+        document.body.appendChild(star);
+        setTimeout(() => star.remove(), 700);
+    });
+
+    // ====== 甜蜜弹幕 ======
+    const sweetWords = [
+        '你好呀', '今天也很美', '想你了', '晚安好梦',
+        '开心最重要', '你笑起来真好看', '么么哒', '抱抱',
+        '你是最棒的', '每天都开心', '好喜欢你', '永远在一起',
+        '陪你到老', '你就是我的全世界', '爱你哦', '超甜的',
+    ];
+
+    function spawnBarrage() {
+        const text = document.createElement('div');
+        text.className = 'sweet-barrage';
+        text.textContent = sweetWords[Math.floor(Math.random() * sweetWords.length)];
+        text.style.top = (Math.random() * 75 + 8) + '%';
+        text.style.animationDuration = (14 + Math.random() * 10) + 's';
+        document.body.appendChild(text);
+        setTimeout(() => text.remove(), 25000);
+    }
+
+    setInterval(spawnBarrage, 3500);
+    setTimeout(spawnBarrage, 1500);
+    setTimeout(spawnBarrage, 2500);
+
+    // ====== 背景漂浮爱心 ======
+    function spawnFloatingHeart() {
+        if (successActive) return;
+        const colors = ['#ff6b8a', '#ff8fab', '#e8456b'];
+        const heart = document.createElement('div');
+        heart.className = 'floating-heart';
+        heart.innerHTML = heartSVG(14 + Math.random() * 10, colors[Math.floor(Math.random() * colors.length)]);
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.bottom = '-30px';
+        heart.style.animationDuration = (10 + Math.random() * 8) + 's';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 18000);
+    }
+    setInterval(spawnFloatingHeart, 3000);
+
+    // ====== Toast ======
+    let toastTimer = null;
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+
+    // ====== 初始化 ======
+    setTimeout(initNoButton, 200);
+    window.addEventListener('resize', () => {
+        if (!successActive) initNoButton();
+    });
+
+    // 入场时展示一条弹幕
+    setTimeout(() => {
+        showToast('嘿，看这里~');
+    }, 1500);
+</script>
+</body>
+</html>
