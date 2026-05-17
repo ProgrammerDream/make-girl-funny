@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "record": "node record.js",
-    "build": "node build.js"
+    "tts": "node tts.js",
+    "build": "node build.js",
+    "build:full": "node tts.js && node build.js"
   },
   "dependencies": {
     "playwright": "^1.48.0"

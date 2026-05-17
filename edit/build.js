@@ -1,23 +1,28 @@
-// build.js — 用 ffmpeg 把 raw/*.webm 合成 final.mp4
+// build.js — 用 ffmpeg 把 raw/*.mp4 合成 final.mp4（可选配音）
 // 用法: node build.js  (或 bash build.sh)
 //
 // 流程:
-//  1) 读 captions.json，给每段 webm 加左上角"模型名 · 国内/国外"钢印 + 底部一行吐槽
-//  2) 用 100ms 黑帧做切场闪
-//  3) concat: hook → seg01 → ... → seg10 → awards
-//  4) 输出无声 final.mp4，用户后期自配音乐 + 人声
+//  1) 读 captions.json，给每段 mp4 加信息带（模型名 + 吐槽）
+//  2) 若 tmp/voice/ 有配音 MP3 则混入音轨，否则添加静音音轨
+//  3) 用 100ms 黑帧（含静音音轨）做切场闪
+//  4) concat: hook → seg01 → ... → seg10 → awards
+//  5) 输出 final.mp4（有配音时含 AI 人声，需自配 BGM）
 
 const { execSync } = require('child_process');
 const fs   = require('fs');
 const path = require('path');
 
-const ROOT     = __dirname;
-const RAW_DIR  = path.join(ROOT, 'raw');
-const OUT_DIR  = path.join(ROOT, 'out');
-const TMP_DIR  = path.join(ROOT, 'tmp');
+const ROOT      = __dirname;
+const RAW_DIR   = path.join(ROOT, 'raw');
+const OUT_DIR   = path.join(ROOT, 'out');
+const TMP_DIR   = path.join(ROOT, 'tmp');
+const VOICE_DIR = path.join(ROOT, 'tmp', 'voice');
 const CAPS     = JSON.parse(fs.readFileSync(path.join(ROOT, 'captions.json'), 'utf8'));
 const SCRIPT   = JSON.parse(fs.readFileSync(path.join(ROOT, 'script.json'), 'utf8'));
 const SCALE    = SCRIPT.scale || 1;
+const AUDIO_RATE = 24000;
+const AUDIO_CHANNELS = 1;
+const AUDIO_LAYOUT = 'mono';
 
 for (const d of [OUT_DIR, TMP_DIR]) if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 
@@ -47,6 +52,72 @@ function writeText(name, text) {
   const p = path.join(TMP_DIR, name);
   fs.writeFileSync(p, text, { encoding: 'utf8' });
   return p.replace(/\\/g, '/').replace(':', '\\:');
+}
+
+// ---------- 配音音频 ----------
+const VOICE_EXISTS = fs.existsSync(VOICE_DIR) && fs.readdirSync(VOICE_DIR).some(f => f.endsWith('.mp3'));
+
+function voicePath(name) {
+  return path.join(VOICE_DIR, `${name}.mp3`);
+}
+
+function probeDuration(file) {
+  return parseFloat(execSync(
+    `ffprobe -v error -show_entries format=duration -of csv=p=0 "${file}"`,
+    { encoding: 'utf8' }
+  ).trim());
+}
+
+// 视频 + 配音对齐。两条独立分支，避免 if/else。
+// 关键 bug 教训：
+//   1. 不能用 `-c:v copy + -t` 截视频 —— 容器写元数据但 packet 没真截，concat copy 后尾巴回来。
+//   2. 所有 concat 输入必须统一音频格式；黑帧若是 44100/stereo、配音段是 24000/mono，
+//      ffmpeg 会在拼接点重写 DTS，音轨被拉长几十秒。
+//   3. 配音补齐后用 atrim 明确截到目标时长，避免 apad 的无限流泄到输出。
+function mixVoiceVideoLongerOrEqual(videoFile, vp, vd, outFile) {
+  // 视频 ≥ 配音：copy 视频全部 packet，配音 apad 后用 atrim 精确截断到视频时长
+  const cmd = `ffmpeg -y -i "${videoFile}" -i "${vp}" ` +
+    `-filter_complex "[1:a]aformat=sample_rates=${AUDIO_RATE}:channel_layouts=${AUDIO_LAYOUT},apad,atrim=0:${vd.toFixed(3)},asetpts=N/SR/TB[a]" ` +
+    `-map 0:v -map "[a]" -c:v copy -c:a aac -b:a 128k -ar ${AUDIO_RATE} -ac ${AUDIO_CHANNELS} "${outFile}"`;
+  sh(cmd);
+}
+
+function mixVoiceAudioLonger(videoFile, vp, vd, ad, outFile) {
+  // 配音 > 视频：视频末尾 freeze 最后一帧扩展到配音时长（必须重编视频）
+  const padDur = (ad - vd).toFixed(3);
+  const cmd = `ffmpeg -y -i "${videoFile}" -i "${vp}" ` +
+    `-filter_complex "[0:v]tpad=stop_mode=clone:stop_duration=${padDur},fps=30[v];[1:a]aformat=sample_rates=${AUDIO_RATE}:channel_layouts=${AUDIO_LAYOUT},atrim=0:${ad.toFixed(3)},asetpts=N/SR/TB[a]" ` +
+    `-map "[v]" -map "[a]" -c:v libx264 -pix_fmt yuv420p -preset medium -crf ${CRF} ` +
+    `-c:a aac -b:a 128k -ar ${AUDIO_RATE} -ac ${AUDIO_CHANNELS} "${outFile}"`;
+  sh(cmd);
+}
+
+function mixVoiceSilent(videoFile, vd, outFile) {
+  // 无配音：补静音音轨，atrim 精确截到视频时长
+  const cmd = `ffmpeg -y -i "${videoFile}" -f lavfi -i anullsrc=channel_layout=${AUDIO_LAYOUT}:sample_rate=${AUDIO_RATE} ` +
+    `-filter_complex "[1:a]atrim=0:${vd.toFixed(3)},asetpts=N/SR/TB[a]" ` +
+    `-map 0:v -map "[a]" -c:v copy -c:a aac -b:a 128k -ar ${AUDIO_RATE} -ac ${AUDIO_CHANNELS} "${outFile}"`;
+  sh(cmd);
+}
+
+function mixVoice(videoFile, voiceName) {
+  const vp = voicePath(voiceName);
+  const outFile = path.join(TMP_DIR, `${voiceName}-voiced.mp4`);
+  const vd = probeDuration(videoFile);
+
+  if (!fs.existsSync(vp)) {
+    mixVoiceSilent(videoFile, vd, outFile);
+    return outFile;
+  }
+
+  const ad = probeDuration(vp);
+  if (vd >= ad) {
+    mixVoiceVideoLongerOrEqual(videoFile, vp, vd, outFile);
+    return outFile;
+  }
+
+  mixVoiceAudioLonger(videoFile, vp, vd, ad, outFile);
+  return outFile;
 }
 
 // ---------- 1. 处理每段 webm ----------
@@ -91,7 +162,9 @@ CAPS.segments.forEach((seg, i) => {
   ].join(',');
 
   sh(`ffmpeg -y -i "${inFile}" -vf "${filter}" -an -c:v libx264 -pix_fmt yuv420p -r 30 -preset medium -crf ${CRF} "${outFile}"`);
-  segMp4s.push(outFile);
+  // 混入配音
+  const voicedFile = mixVoice(outFile, `seg-${padded}`);
+  segMp4s.push(voicedFile);
 });
 
 // ---------- 2. hook & awards ----------
@@ -105,15 +178,16 @@ function processExtra(name, durationSec) {
   }
   // hook/awards 不加钢印
   sh(`ffmpeg -y -i "${inFile}" -vf "scale=${VW}:${VH}:flags=lanczos:force_original_aspect_ratio=increase,crop=${VW}:${VH}" -an -c:v libx264 -pix_fmt yuv420p -r 30 -preset medium -crf ${CRF} "${outFile}"`);
-  return outFile;
+  // 混入配音
+  return mixVoice(outFile, name);
 }
 
 const hookMp4   = processExtra('hook');
 const awardsMp4 = processExtra('awards');
 
-// ---------- 3. 切场黑帧 (0.1s) ----------
+// ---------- 3. 切场黑帧 (0.1s, 含静音音轨) ----------
 const blackMp4 = path.join(TMP_DIR, 'black.mp4');
-sh(`ffmpeg -y -f lavfi -i color=c=black:s=${VW}x${VH}:d=0.1:r=30 -c:v libx264 -pix_fmt yuv420p -preset medium -crf ${CRF} "${blackMp4}"`);
+sh(`ffmpeg -y -f lavfi -i color=c=black:s=${VW}x${VH}:d=0.1:r=30 -f lavfi -i anullsrc=channel_layout=${AUDIO_LAYOUT}:sample_rate=${AUDIO_RATE} -c:v libx264 -pix_fmt yuv420p -preset medium -crf ${CRF} -c:a aac -b:a 128k -ar ${AUDIO_RATE} -ac ${AUDIO_CHANNELS} -t 0.1 -map 0:v -map 1:a "${blackMp4}"`);
 
 // ---------- 4. concat ----------
 const orderList = [];
@@ -131,7 +205,9 @@ const concatFile = path.join(TMP_DIR, 'concat.txt');
 fs.writeFileSync(concatFile, concatList, 'utf8');
 
 const finalMp4 = path.join(OUT_DIR, 'final.mp4');
-sh(`ffmpeg -y -f concat -safe 0 -i "${concatFile}" -c copy "${finalMp4}"`);
+// 视频 copy 保持帧；音频重编码并保持 24000/mono，避免 concat 输入参数变化导致 DTS 被改写。
+sh(`ffmpeg -y -f concat -safe 0 -i "${concatFile}" -c:v copy -c:a aac -b:a 128k -ar ${AUDIO_RATE} -ac ${AUDIO_CHANNELS} -shortest "${finalMp4}"`);
 
 console.log(`\n✅ 完成: ${finalMp4}`);
-console.log(`   ${VW}x${VH} 竖屏, 30fps, 无声 (后期自配 BGM + 人声)`);
+const voiceNote = VOICE_EXISTS ? '含 AI 配音 (需自配 BGM)' : '无声 (后期自配 BGM + 人声)';
+console.log(`   ${VW}x${VH} 竖屏, 30fps, ${voiceNote}`);
